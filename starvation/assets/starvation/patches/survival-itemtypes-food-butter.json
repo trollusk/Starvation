@@ -1,0 +1,9 @@
+[
+  {
+    "op": "replace",
+    "path": "/attributes/nutritionPropsWhenInMeal/saturation",
+    "value": 1400,
+    "file": "game:itemtypes/food/butter.json",
+    "side": "Server"
+  }
+]

@@ -1,0 +1,9 @@
+[
+  {
+    "op": "replace",
+    "path": "/attributes/waterTightContainerProps/nutritionPropsPerLitre/satiety",
+    "value": 860,
+    "file": "game:itemtypes/liquid/cider.json",
+    "side": "Server"
+  }
+]

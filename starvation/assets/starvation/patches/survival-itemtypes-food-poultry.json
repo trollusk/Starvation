@@ -1,0 +1,16 @@
+[
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/*-cooked/satiety",
+    "value": 740,
+    "file": "game:itemtypes/food/poultry.json",
+    "side": "Server"
+  },
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/*-cured/satiety",
+    "value": 600,
+    "file": "game:itemtypes/food/poultry.json",
+    "side": "Server"
+  }
+]

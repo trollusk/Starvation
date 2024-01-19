@@ -1,0 +1,9 @@
+[
+  {
+    "op": "replace",
+    "path": "/attributes/waterTightContainerProps/nutritionPropsPerLitre/saturation",
+    "value": 2000,
+    "file": "game:itemtypes/liquid/dairy/cottagecheeseportion.json",
+    "side": "Server"
+  }
+]

@@ -1,0 +1,16 @@
+[
+  {
+    "op": "replace",
+    "path": "/nutritionProps/foodcategory",
+    "value": "Dairy",
+    "file": "game:itemtypes/resource/fat.json",
+    "side": "Server"
+  },
+  {
+    "op": "replace",
+    "path": "/nutritionProps/saturation",
+    "value": 1800,
+    "file": "game:itemtypes/resource/fat.json",
+    "side": "Server"
+  }
+]

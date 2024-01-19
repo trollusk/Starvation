@@ -1,0 +1,16 @@
+[
+  {
+    "op": "replace",
+    "path": "/attributes/nutritionPropsWhenInMeal/satietyByType/*-breadfruit",
+    "value": 800,
+    "file": "game:itemtypes/food/fruit.json",
+    "side": "Server"
+  },
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/*-breadfruit/satiety",
+    "value": 1900,
+    "file": "game:itemtypes/food/fruit.json",
+    "side": "Server"
+  }
+]

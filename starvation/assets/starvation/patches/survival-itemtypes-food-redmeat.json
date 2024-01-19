@@ -1,0 +1,23 @@
+[
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/redmeat-cooked/satiety",
+    "value": 670,
+    "file": "game:itemtypes/food/redmeat.json",
+    "side": "Server"
+  },
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/redmeat-cured/satiety",
+    "value": 500,
+    "file": "game:itemtypes/food/redmeat.json",
+    "side": "Server"
+  },
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/redmeat-vintage/satiety",
+    "value": 670,
+    "file": "game:itemtypes/food/redmeat.json",
+    "side": "Server"
+  }
+]

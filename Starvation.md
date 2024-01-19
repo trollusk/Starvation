@@ -35,47 +35,19 @@ should not use 100% of fat before starting to break down protein - obese people 
 "buckets" - glycogen, fat, protein, carbohydrate
 
 game effects of starvation
-- reduced maximum health (show "cap" on health bar)
-- reduced maximum stamina
-- reduced regeneration rate of health and stamina
+X reduced maximum health (show "cap" on health bar)
+- reduced regeneration rate of health 
 - slow movement
-- "satiated" buff
-- eating should lessen SOME of the debuffs temporarily
 
-each tick
-- look at what we are doing, and subtract kJ per tick from our energy stores (from short term first)
-- check if energy < X - has debuff
+TODO
 
-debuff "health cap": reduce max health, and display cap on healthbar
-
-upon eating
-- add energy content to short term energy reserve
-- add temporary "sated" buff
-
-
-EntityBehaviorHunger.hungerCounter
-
-hungerTree = entity.WatchedAttributes.GetTreeAttribute("hunger")
-
-hungerTree
-    saturation 1500
-    maxsaturation 1500
-    saturationlossdelayfruit/veg/grain/protein/dairy 0
-
-listenerId = entity.World.RegisterGameTickListener(SlowTick, 6000)
-UpdateNutrientHealthBoost()
-
-ConsumeSaturation(float amount) : ReduceSaturation(amount / 10f)
-
-EQuations to predict BMR based on age, body mass, sex, and environmental temperature
-
-BMR = 13.6m - 4.8a + 147s - 4.3h + 857
-(result is in kcal, multiply by 4.184 to get kJ)
-m = mass in kg
-a = age in years
-s = 1 if male, 0 if female
-h = monthly high heat index temperature in C
-(dry bulb temperature, or higher if high humidity)
+* don't remove BehaviorHunger since we need some aspects; just set it to be inactive
+* energy etc must persist across saves
+* put in METs for all activities
+* decrement body weight as energyReserves fall
+* remove speed debuff while "satiated"
+* shivering
+* humidity
 
 
 Cold weather
@@ -83,21 +55,10 @@ Cold weather
 Shivering can increase BMR by up to 5 fold
 Adaptation to cold environment: BMR is increased by 15-30%
 
-real seconds x SpeedOfTime x CalendarSpeedMul = game seconds passed 
-
-deltaTimeToGameSeconds(dt)
-return dt / 1000 * World.Calendar.SpeedOfTime * World.Calendar.CalendarSpeedMul 
-
-
 Weight loss during starvation
 first day: 1 kg
 first 5 days: 0.5 kg/day
 by day 21, falls to 0.3 kg/day and remains stable after that
 
-BMI 12 is generally unrecoverable
+BMI 12 or lower is generally unrecoverable
 
-60 real seconds = 1 game hour (60x time)
-1 real second = 1 game minute
-1 real second = 1/1440 of a game day
-BMR = 6800
-so should be ticking by at 4.7 per second

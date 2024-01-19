@@ -151,6 +151,11 @@ namespace Starvation
                     {
                         iplayer.Entity.AddBehavior(new EntityBehaviorStarve(iplayer.Entity));
                     }
+                    EntityBehavior bh = iplayer.Entity.GetBehavior<EntityBehaviorHunger>();
+                    if (bh != null)
+                    {
+                        iplayer.Entity.RemoveBehavior(bh);
+                    }
                 }
             }
         }
@@ -162,7 +167,7 @@ namespace Starvation
             dialog = new StarvationTextMessage(clientAPI);
             capi = clientAPI;
             dialog.TryOpen();
-            clientAPI.Event.RegisterGameTickListener(On1sClientTick, 500);
+            clientAPI.Event.RegisterGameTickListener(ClientTick500, 500);
         }
 
 
@@ -175,8 +180,9 @@ namespace Starvation
         }
 
 
-        // Called every 1000 milliseconds
-        private void On1sClientTick(float deltaTime)
+        // Called every 500 milliseconds
+        // Note:deltaTime is in SECONDS (i.e. 0.5)
+        private void ClientTick500(float deltaTime)
         {
             EntityPlayer clientPlayer = capi.World.Player.Entity;
             double mets = CalculateCurrentMETs(clientPlayer);
@@ -188,7 +194,7 @@ namespace Starvation
             {
                 updateStarvationMessage();
             }
-            Console.WriteLine("Client tick 1s: METS = " + mets);
+            Console.WriteLine("Client tick 0.5s: METS = " + mets);
         }
 
 
@@ -213,12 +219,45 @@ namespace Starvation
             return entity.World.BlockAccessor.GetClimateAt(entity.Pos.AsBlockPos, EnumGetClimateMode.ForSuppliedDate_TemperatureOnly, entity.World.Calendar.TotalDays).Temperature;
         }
 
+        static public double GetHumidityAtEntity(Entity entity)
+        {
+            // TODO needs to return relative humidity% 0-100
+            return 50;
+        }
+
 
         // Return a "healthy" weight for the (human) entity, in kg, using eyeHeight as its height. 
         static public double HealthyWeight(Entity entity)
         {
             return HEALTHY_BMI * Math.Pow(entity.Properties.EyeHeight, 2);
         }
+
+
+        // Returns estimated heat index temperature in degrees celsius.
+        //      ambientTemperature is the dry-bulb temperature in C
+        //      relativeHumidity is a percentage 0-100
+        // Equation from Steadman, R. G. (July 1979). "The Assessment of Sultriness" (!!) (via Wikipedia)
+        public static double HeatIndexTemperature(double ambientTemperature, double relativeHumidity)
+        {
+            const double c1 = -8.78469476;
+            const double c2 = 1.61139411;
+            const double c3 = 2.33854884;
+            const double c4 = -0.14611605;
+            const double c5 = -0.012308094;
+            const double c6 = -0.01642483;
+            const double c7 = 0.002211732;
+            const double c8 = 0.00072546;
+            const double c9 = -0.000003582;
+            return c1 + c2 * ambientTemperature 
+                + c3 * relativeHumidity 
+                + c4 * ambientTemperature * relativeHumidity 
+                + c5 * Math.Pow(ambientTemperature, 2) 
+                + c6 * Math.Pow(relativeHumidity, 2) 
+                + c7 * Math.Pow(ambientTemperature, 2) * relativeHumidity 
+                + c8 * ambientTemperature * Math.Pow(relativeHumidity, 2) 
+                + c9 * Math.Pow(ambientTemperature, 2) * Math.Pow(relativeHumidity, 2) ;
+        }
+
 
         // Returns (human) entity's basal metabolic rate in kilojoules/day
         // This is the "baseline" energy expended if engaged in no activity other than breathing.
@@ -248,14 +287,14 @@ namespace Starvation
             // list of all active animations
             List<string> keyList = new List<string>(entity.AnimManager.ActiveAnimationsByAnimCode.Keys);
 
-            Console.Write("Anims: ");
+            // Console.Write("Anims: ");
             foreach (string animName in keyList)
             {
-                Console.Write(animName + ", ");
+                // Console.Write(animName + ", ");
                 METsByActivity.TryGetValue(animName, out value);
                 maxMETs = Math.Max(maxMETs, value);
             }
-            Console.WriteLine();
+            // Console.WriteLine();
             return maxMETs;
         }
 

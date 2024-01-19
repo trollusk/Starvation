@@ -1,0 +1,16 @@
+[
+  {
+    "op": "replace",
+    "path": "/attributes/nutritionPropsWhenInMeal/satiety",
+    "value": 800,
+    "file": "game:itemtypes/liquid/jamhoneyportion.json",
+    "side": "Server"
+  },
+  {
+    "op": "replace",
+    "path": "/attributes/waterTightContainerProps/nutritionPropsPerLitre/saturation",
+    "value": 2600,
+    "file": "game:itemtypes/liquid/jamhoneyportion.json",
+    "side": "Server"
+  }
+]

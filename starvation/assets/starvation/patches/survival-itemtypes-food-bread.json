@@ -1,0 +1,65 @@
+[
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/*-charred/saturation",
+    "value": 1500,
+    "file": "game:itemtypes/food/bread.json",
+    "side": "Server"
+  },
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/*-flax-charred/saturation",
+    "value": 1500,
+    "file": "game:itemtypes/food/bread.json",
+    "side": "Server"
+  },
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/*-flax-partbaked/saturation",
+    "value": 1200,
+    "file": "game:itemtypes/food/bread.json",
+    "side": "Server"
+  },
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/*-flax-perfect/saturation",
+    "value": 2450,
+    "file": "game:itemtypes/food/bread.json",
+    "side": "Server"
+  },
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/*-partbaked/saturation",
+    "value": 900,
+    "file": "game:itemtypes/food/bread.json",
+    "side": "Server"
+  },
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/*-perfect/saturation",
+    "value": 1955,
+    "file": "game:itemtypes/food/bread.json",
+    "side": "Server"
+  },
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/*-rice-charred/saturation",
+    "value": 1700,
+    "file": "game:itemtypes/food/bread.json",
+    "side": "Server"
+  },
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/*-rice-partbaked/saturation",
+    "value": 1000,
+    "file": "game:itemtypes/food/bread.json",
+    "side": "Server"
+  },
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/*-rice-perfect/saturation",
+    "value": 2240,
+    "file": "game:itemtypes/food/bread.json",
+    "side": "Server"
+  }
+]

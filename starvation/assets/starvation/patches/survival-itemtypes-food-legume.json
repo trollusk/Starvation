@@ -1,0 +1,16 @@
+[
+  {
+    "op": "replace",
+    "path": "/attributes/nutritionPropsWhenInMeal/satietyByType/*-peanut",
+    "value": 1600,
+    "file": "game:itemtypes/food/legume.json",
+    "side": "Server"
+  },
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/*-peanut/saturation",
+    "value": 1600,
+    "file": "game:itemtypes/food/legume.json",
+    "side": "Server"
+  }
+]

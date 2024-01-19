@@ -1,0 +1,37 @@
+[
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/*-cooked/satiety",
+    "value": 430,
+    "file": "game:itemtypes/food/fish.json",
+    "side": "Server"
+  },
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/*-cured/satiety",
+    "value": 300,
+    "file": "game:itemtypes/food/fish.json",
+    "side": "Server"
+  },
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/*-cured-smoked/satiety",
+    "value": 300,
+    "file": "game:itemtypes/food/fish.json",
+    "side": "Server"
+  },
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/*-raw/satiety",
+    "value": 450,
+    "file": "game:itemtypes/food/fish.json",
+    "side": "Server"
+  },
+  {
+    "op": "replace",
+    "path": "/nutritionPropsByType/*-smoked/satiety",
+    "value": 300,
+    "file": "game:itemtypes/food/fish.json",
+    "side": "Server"
+  }
+]
