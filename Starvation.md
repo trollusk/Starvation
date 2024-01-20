@@ -41,15 +41,6 @@ X reduced maximum health (show "cap" on health bar)
 
 TODO
 
-* don't remove BehaviorHunger since we need some aspects; just set it to be inactive
-* energy etc must persist across saves
-* put in METs for all activities
-* decrement body weight as energyReserves fall
-* remove speed debuff while "satiated"
-* shivering
-* humidity
-
-
 Cold weather
 
 Shivering can increase BMR by up to 5 fold

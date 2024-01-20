@@ -32,98 +32,98 @@ namespace Starvation
         {
             { "walk", 4 },
             { "idle", 1.3 },
-            { "helditemready", 1 },
-            { "sitflooridle.", 1 },
-            { "sitflooredge.", 1 },
-            { "sprint", 10 },
-            { "sprint-fp", 10 },
-            { "sneakwalk", 1 },
-            { "sneakidle", 1 },
-            { "glide", 1 },
-            { "swim", 1 },
-            { "swimidle", 1 },
-            { "jump", 1 },
-            { "climbup", 1 },
-            { "climbidle", 1 },
-            { "sleep", 1 },
-            { "coldidle", 1 },
-            { "protecteyes", 1 },
-            { "coldidleheld", 1 },
-            { "holdunderarm", 1 },
-            { "holdinglanternlefthand", 1 },
-            { "holdbothhands", 1 },
-            { "holdbothhandslarge", 1 },
+            { "helditemready", 1.5 },
+            { "sitflooridle.", 1.3 },
+            { "sitflooredge.", 1.3 },
+            { "sprint", 12 },
+            { "sprint-fp", 12 },
+            { "sneakwalk", 2.5 },
+            { "sneakidle", 1.3 },
+            { "glide", 3.5 },
+            { "swim", 5.3 },
+            { "swimidle", 3.5 },
+            { "jump", 8 },
+            { "climbup", 8 },
+            { "climbidle", 5 },
+            { "sleep", 0.95 },
+            { "coldidle", 4 },
+            { "protecteyes", 1.5 },
+            { "coldidleheld", 5 },
+            { "holdunderarm", 1.5 },
+            { "holdinglanternlefthand", 1.5 },
+            { "holdbothhands", 1.5 },
+            { "holdbothhandslarge", 2 },
             { "hurt", 1 },
-            { "bowaim", 1 },
-            { "bowaimcrude", 1 },
-            { "bowaimlong", 1 },
-            { "bowaimrecurve", 1 },
+            { "bowaim", 2.5 },
+            { "bowaimcrude", 2.5 },
+            { "bowaimlong", 2.5 },
+            { "bowaimrecurve", 2.5 },
             { "bowhit", 1 },
-            { "throwaim", 1 },
-            { "throw", 1 },
-            { "slingaimgreek", 1 },
-            { "slingthrowgreek", 1 },
-            { "slingaimbalearic", 1 },
-            { "slingthrowbalearic", 1 },
-            { "hit", 1 },
-            { "smithing", 1 },
-            { "smithingwide", 1 },
-            { "knap", 1 },
-            { "breaktool", 1 },
-            { "breakhand", 1 },
-            { "falx", 1 },
-            { "swordhit", 1 },
-            { "axechop", 1 },
-            { "axeheld", 1 },
-            { "axeready", 1 },
-            { "hoe", 1 },
-            { "water", 1 },
-            { "shoveldig", 1 },
-            { "shovelready", 1 },
-            { "shovelidle", 1 },
-            { "spearhit", 1 },
-            { "spearready", 1 },
-            { "spearidle", 1 },
-            { "scythe", 1 },
-            { "scytheIdle", 1 },
-            { "scytheReady", 1 },
-            { "hammerandchisel", 1 },
-            { "shears", 1 },
-            { "placeblock", 1 },
-            { "interactstatic", 1 },
-            { "twohandplaceblock", 1 },
-            { "eat", 1 },
-            { "wave", 1 },
-            { "nod", 1 },
-            { "bow", 1 },
-            { "facepalm", 1 },
-            { "cry", 1 },
-            { "shrug", 1 },
-            { "cheer", 1 },
+            { "throwaim", 2 },
+            { "throw", 4 },
+            { "slingaimgreek", 2 },
+            { "slingthrowgreek", 2 },
+            { "slingaimbalearic", 2 },
+            { "slingthrowbalearic", 2 },
+            { "hit", 2 },
+            { "smithing", 4 },
+            { "smithingwide", 4 },
+            { "knap", 3 },
+            { "breaktool", 1.3 },
+            { "breakhand", 1.3 },
+            { "falx", 5 },
+            { "swordhit", 2 },
+            { "axechop", 5 },
+            { "axeheld", 1.3 },
+            { "axeready", 1.3 },
+            { "hoe", 3.5 },
+            { "water", 1.5 },
+            { "shoveldig", 5 },
+            { "shovelready", 1.3 },
+            { "shovelidle", 1.3 },
+            { "spearhit", 1.5 },
+            { "spearready", 2.3 },
+            { "spearidle", 2.3 },
+            { "scythe", 2 },
+            { "scytheIdle", 1.3 },
+            { "scytheReady", 1.3 },
+            { "hammerandchisel", 3 },
+            { "shears", 4 },
+            { "placeblock", 3 },
+            { "interactstatic", 1.3 },
+            { "twohandplaceblock", 4 },
+            { "eat", 2 },
+            { "wave", 1.5 },
+            { "nod", 1.5 },
+            { "bow", 1.5 },
+            { "facepalm", 1.5 },
+            { "cry", 1.5 },
+            { "shrug", 1.5 },
+            { "cheer", 1.5 },
             { "laugh", 1 },
-            { "rage", 1 },
-            { "panning", 1 },
-            { "pour", 1 },
-            { "petlarge", 1 },
-            { "petsmall", 1 },
-            { "crudeOarIdle", 1 },
-            { "crudeOarStandingReady", 1 },
-            { "crudeOarHit", 1 },
-            { "crudeOarForward", 1 },
-            { "crudeOarBackward", 1 },
-            { "crudeOarReady", 1 },
-            { "yawn", 1 },
-            { "stretch", 1 },
-            { "cough", 1 },
-            { "headscratch", 1 },
-            { "raiseshield-left", 1 },
-            { "raiseshield-right", 1 },
-            { "knifecut", 1 },
-            { "knifestab", 1 },
-            { "startfire", 1 },
-            { "shieldBlock", 1 },
-            { "chiselready", 1 },
-            { "chiselhit", 1 }
+            { "rage", 1.5 },
+            { "panning", 2.8 },
+            { "pour", 1.5 },
+            { "petlarge", 1.5 },
+            { "petsmall", 1.5 },
+            { "crudeOarIdle", 2.3 },
+            { "crudeOarStandingReady", 2.3 },
+            { "crudeOarHit", 2 },
+            { "crudeOarForward", 5.8 },
+            { "crudeOarBackward", 5.8 },
+            { "crudeOarReady", 2.3 },
+            { "yawn", 2.3 },
+            { "stretch", 2.3 },
+            { "cough", 2.3 },
+            { "headscratch", 1.5 },
+            { "raiseshield-left", 2 },
+            { "raiseshield-right", 2 },
+            { "knifecut", 5 },
+            { "knifestab", 5 },
+            { "startfire", 3 },
+            { "shieldBlock", 10 },
+            { "chiselready", 1.5 },
+            { "chiselhit", 3 }
         };
 
 
@@ -142,6 +142,10 @@ namespace Starvation
         // If you want to add or adjust attributes or properties of other game objects, do so in this method.
         public override void AssetsFinalize(ICoreAPI api)
         {
+            // Deactivate vanilla hunger system
+
+            GlobalConstants.HungerSpeedModifier = 0;
+
             if (api.Side == EnumAppSide.Server)
             {
                 // TODO add kJ and protein/fat/carb classification to all foods
@@ -150,11 +154,6 @@ namespace Starvation
                     if (iplayer.Entity.GetBehavior("starve") == null)
                     {
                         iplayer.Entity.AddBehavior(new EntityBehaviorStarve(iplayer.Entity));
-                    }
-                    EntityBehavior bh = iplayer.Entity.GetBehavior<EntityBehaviorHunger>();
-                    if (bh != null)
-                    {
-                        iplayer.Entity.RemoveBehavior(bh);
                     }
                 }
             }
@@ -219,10 +218,18 @@ namespace Starvation
             return entity.World.BlockAccessor.GetClimateAt(entity.Pos.AsBlockPos, EnumGetClimateMode.ForSuppliedDate_TemperatureOnly, entity.World.Calendar.TotalDays).Temperature;
         }
 
+
+        // Number from 0-1
+        static public double GetRainfallAtEntity(Entity entity)
+        {
+            return entity.World.BlockAccessor.GetClimateAt(entity.Pos.AsBlockPos, EnumGetClimateMode.ForSuppliedDateValues, entity.World.Calendar.TotalDays).Rainfall;
+        }
+
+
         static public double GetHumidityAtEntity(Entity entity)
         {
-            // TODO needs to return relative humidity% 0-100
-            return 50;
+            // Humidity correlates to rainfall pretty closely
+            return Math.Clamp(GetRainfallAtEntity(entity) * 100, 10, 90);
         }
 
 
@@ -273,6 +280,18 @@ namespace Starvation
             // double temp = entity.World.BlockAccessor.GetClimateAt(entity.Pos.AsBlockPos, EnumGetClimateMode.ForSuppliedDate_TemperatureOnly, entity.World.Calendar.TotalDays).Temperature;
             // double humidity = 50;
             return (13.6 * weightkg - (4.8 * age) + 73.5 - (4.3 * tempC) + 857) * 4.189;
+        }
+
+
+        static public double CaloriesToKilojoules(double cal)
+        {
+            return cal * 4.189;
+        }
+
+
+        static public double EnergyReservesToBMI(double energy)
+        {
+            return 5.5948e-12 * Math.Pow(energy, 2) + 0.0000226104 * energy + 21.9336;
         }
 
 

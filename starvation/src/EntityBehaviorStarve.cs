@@ -9,6 +9,8 @@ using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
 using Vintagestory.GameContent;
 using System.Collections;
+using Vintagestory.ServerMods.NoObf;
+using Vintagestory.API.Config;
 
 
 
@@ -25,7 +27,8 @@ namespace Starvation
         private const double DEATH_THRESHOLD = -510000;
         long serverListenerId;
         
-        // Watched Attributes are permanent entity attributes that are synced between client and server.
+        // Watched Attributes are permanent entity attributes that are synced between client and server,
+        // and persist across save/load.
 
         public double energyReserves 
         {
@@ -93,21 +96,39 @@ namespace Starvation
                 if (mode == EnumGameMode.Creative || mode == EnumGameMode.Spectator) return;
             }
 
+            // Set vanilla saturation to an OK value, to "deactivate" vanilla hunger system
+            EntityBehaviorHunger bhunger = entity.GetBehavior<EntityBehaviorHunger>();
+            // if (bhunger != null)
+            // {
+            //     bhunger.Saturation = bhunger.MaxSaturation * 0.75f;
+            // }
+            
             // Decrease max health if starving
             EntityBehaviorHealth bh = entity.GetBehavior<EntityBehaviorHealth>();
             double healthPenalty = -1 * MaxHealthPenalty();
             bh.MaxHealthModifiers["starvationMod"] = (float) healthPenalty;
+            // Remove vanilla stat boosts from food groups
+            bh.MaxHealthModifiers["nutrientHealthMod"] = 0;
 
             // Slower health regeneration if starving
             double baseRegenSpeed = entity.Api.World.Config.GetString("playerHealthRegenSpeed", "1").ToFloat();
             bh._playerHealthRegenSpeed = (float) (baseRegenSpeed * HealthRegenPenalty());
 
             // Slower movement speed if starving
-            entity.Stats.Set("walkspeed", "starvationmod", -0.5f, false);
+            entity.Stats.Set("walkspeed", "starvationmod", -1 * MoveSpeedPenalty(), false);
+
+            // "Intoxicated" effect if severe starvation
+            if (energyReserves < STARVE_THRESHOLD_EXTREME)
+            {
+                entity.WatchedAttributes.SetFloat("intoxication", Math.Max(entity.WatchedAttributes.GetFloat("intoxication"), 1));
+            }
 
             // We have expended kJPerSecond * gameSeconds (kJ)
             // Decrement our total energy stores by this amount
             energyReserves = energyReserves - (kJPerGameSecond * gameSeconds);
+
+            // Modify body weight to be in line with energy reserves
+            bodyWeight = ModSystemStarvation.EnergyReservesToBMI(energyReserves) * Math.Pow(entity.Properties.EyeHeight, 2);
 
             Console.WriteLine("ServerTick250: BMR = " + (kJPerGameDay/currentMETs) + ", energyReserves = " + energyReserves + 
                                 ", kJPerGameSecond = " + kJPerGameSecond + ", deltaTime = " + deltaTime + ", gameSeconds = " + 
@@ -126,15 +147,9 @@ namespace Starvation
             // vanilla game saturation/satiety is meant to "correlate" with calories/kilojoules
             // It doesn't really, but a very rough approximation is 2 * saturation = kJ
 
-            // Unfortunately "fat" is not a food category in VS
-            // TODO some kJ are expended in digestion of food
-            // this can be dealt with by deducting a "digestion tax" from the kJ supplied by the food
-            //      carbohydrates: 5-10% loss
-            //      fat: 0-3% loss
-            //      protein: 20-30% loss
+            // Unfortunately "fat" is not a food category in VS, so we use "Dairy" instead.
 
-            // TODO use "correct" kJ values of foods, instead of saturation
-            energyReserves += 2 * saturation;
+            energyReserves += ModSystemStarvation.CaloriesToKilojoules(0.5 * saturation);
             // TODO gain a "satiated" buff if the meal was of decent size (esp if protein or fat)
         }
 
@@ -191,6 +206,35 @@ namespace Starvation
             } else {
                 return 1;
             }
+        }
+
+
+        // Returns number which is subtracted from movement speed.
+        public float MoveSpeedPenalty()
+        {
+            float debuff = 0;
+            EntityBehaviorHunger bhunger = entity.GetBehavior<EntityBehaviorHunger>();
+
+            if (energyReserves < STARVE_THRESHOLD_EXTREME)
+            {
+                debuff = 0.6f;
+            }
+            else if (energyReserves < STARVE_THRESHOLD_SEVERE)
+            {
+                debuff = 0.4f;
+            }
+            else if (energyReserves < STARVE_THRESHOLD_MODERATE)
+            {
+                debuff = 0.2f;
+            }
+
+            if (bhunger.SaturationLossDelayDairy > 0 || bhunger.SaturationLossDelayFruit > 0 || bhunger.SaturationLossDelayGrain > 0 
+                || bhunger.SaturationLossDelayProtein > 0 || bhunger.SaturationLossDelayVegetable > 0)
+            {
+                // Reduce the movement speed debuff temporarily while satiated
+                debuff *= 0.5f;
+            }
+            return debuff;
         }
 
         // Returns number of game seconds represented by deltaTime (real world SECONDS)
