@@ -10,6 +10,7 @@ using Vintagestory.GameContent;
 using Vintagestory.API.Config;
 using static Vintagestory.API.Client.GuiDialog;
 using Vintagestory.API.Common.Entities;
+using Vintagestory.Server;
 
 
 
@@ -20,14 +21,14 @@ namespace Starvation
     {
         public const double HEALTHY_BMI = 22;
 
-        ICoreClientAPI capi;
-        ICoreServerAPI sapi;
+        public static ICoreClientAPI clientAPI;
+        public static ICoreServerAPI serverAPI;
 
         GuiDialog dialog;
 
 
        // Dictionary mapping animation names to METs
-        // TODO add all "-fp" versions, and add METs for each activity
+        // TODO add all "-fp" versions
         Dictionary<string, double> METsByActivity = new Dictionary<string, double>
         {
             { "walk", 4 },
@@ -129,11 +130,7 @@ namespace Starvation
 
         public override void Start(ICoreAPI api)
         {
-            // Called on both server and client, before any content is actually loaded.
-            //
-            // Common uses:
-            // - Register the Classes of new behaviours, blocks, items, entities, etc
-            // - Register listeners
+            // Called on server, before any content is actually loaded.
 
             api.RegisterEntityBehaviorClass("starve", typeof(EntityBehaviorStarve));
         }
@@ -148,7 +145,6 @@ namespace Starvation
 
             if (api.Side == EnumAppSide.Server)
             {
-                // TODO add kJ and protein/fat/carb classification to all foods
                 foreach (IPlayer iplayer in api.World.AllPlayers)
                 {
                     if (iplayer.Entity.GetBehavior("starve") == null)
@@ -160,46 +156,56 @@ namespace Starvation
         }
 
 
-        // Called from the client, when the game world is fully loaded and ready to start.
-        public override void StartClientSide(ICoreClientAPI clientAPI)
+        public override void StartServerSide(ICoreServerAPI sapi)
         {
+            // Called on server, before any content is actually loaded.
+
+            serverAPI = sapi;
+        }
+
+
+        // Called from the client, when the game world is fully loaded and ready to start.
+        public override void StartClientSide(ICoreClientAPI capi)
+        {
+            clientAPI = capi;
             dialog = new StarvationTextMessage(clientAPI);
-            capi = clientAPI;
             dialog.TryOpen();
             clientAPI.Event.RegisterGameTickListener(ClientTick500, 500);
         }
 
 
-        // Same thing, but called from the server. 
-        // Initialisation of assets independent of the game world should not be done here, but in AssetsFinalize
-        public override void StartServerSide(ICoreServerAPI serverAPI)
-        {
-            sapi = serverAPI;
-            // serverAPI.Event.RegisterGameTickListener(On1sTick_Server, 1000);
-        }
-
-
-        // Called every 500 milliseconds
+        // Called within the CLIENT, every 500 milliseconds.
+        // The role of this function is to calculate the player's current expended METs.
+        // This has to be done in the client because the server seems not to have access to 
+        // the list of active animations.
         // Note:deltaTime is in SECONDS (i.e. 0.5)
         private void ClientTick500(float deltaTime)
         {
-            EntityPlayer clientPlayer = capi.World.Player.Entity;
+            EntityPlayer clientPlayer = clientAPI.World.Player.Entity;
             double mets = CalculateCurrentMETs(clientPlayer);
 
             clientPlayer.WatchedAttributes.SetDouble("currentMETs", mets);
 
-            dialog.TryOpen();
-            if (dialog.IsOpened())
+            // Only show the messages if we are in "entity debug mode"
+            // Enter this mode with server command /entity debug 1
+            // and client command .clientconfig showentitydebuginfo 1
+            if (clientAPI.World.EntityDebugMode)
             {
-                updateStarvationMessage();
+                dialog.TryOpen();
+                if (dialog.IsOpened())
+                {
+                    updateStarvationMessage();
+                }
+                Console.WriteLine("Client tick 0.5s: METS = " + mets);
+            } else {
+                dialog.TryClose();
             }
-            Console.WriteLine("Client tick 0.5s: METS = " + mets);
         }
 
 
         void updateStarvationMessage()
         {
-            EntityPlayer clientPlayer = capi.World.Player.Entity;
+            EntityPlayer clientPlayer = clientAPI.World.Player.Entity;
 
             double METs = clientPlayer.WatchedAttributes.GetDouble("currentMETs", 1);
             double energy = clientPlayer.WatchedAttributes.GetDouble("energyReserves", 999);

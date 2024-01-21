@@ -26,7 +26,10 @@ namespace Starvation
         private const double STARVE_THRESHOLD_EXTREME = -450000;
         private const double DEATH_THRESHOLD = -510000;
         long serverListenerId;
-        
+        long serverListenerSlowId;
+
+        double heatIndexTemp = 15;      // heat index temperature at entity's current location
+
         // Watched Attributes are permanent entity attributes that are synced between client and server,
         // and persist across save/load.
 
@@ -70,8 +73,66 @@ namespace Starvation
             if (entity.World.Side == EnumAppSide.Server)
             {
                 serverListenerId = entity.World.RegisterGameTickListener(ServerTick250, 250);
+                serverListenerSlowId = entity.World.RegisterGameTickListener(ServerTickSlow, 5000);
                 // testing
                 // energyReserves = -170000;
+            }
+        }
+
+
+        // Called every 5 seconds
+        private void ServerTickSlow(float deltaTime)
+        {
+            float damageMul = DamageMultipler();
+
+            heatIndexTemp = ModSystemStarvation.HeatIndexTemperature(ModSystemStarvation.GetTemperatureAtEntity(entity), 
+                                                                     ModSystemStarvation.GetHumidityAtEntity(entity));
+            
+            // Set vanilla saturation to an OK value, to "deactivate" vanilla hunger system
+            EntityBehaviorHunger bhunger = entity.GetBehavior<EntityBehaviorHunger>();
+            // if (bhunger != null)
+            // {
+            //     bhunger.Saturation = bhunger.MaxSaturation * 0.75f;
+            // }
+            
+            // Modify body weight to be in line with energy reserves
+            bodyWeight = ModSystemStarvation.EnergyReservesToBMI(energyReserves) * Math.Pow(entity.Properties.EyeHeight, 2);
+
+            // Decrease max health if starving
+            EntityBehaviorHealth bh = entity.GetBehavior<EntityBehaviorHealth>();
+            double healthPenalty = -1 * MaxHealthPenalty();
+            bh.MaxHealthModifiers["starvationMod"] = (float) healthPenalty;
+            // Remove vanilla stat boosts from food groups
+            bh.MaxHealthModifiers["nutrientHealthMod"] = 0;
+
+            // Slower health regeneration if starving (only if client player)
+            if (IsSelf)
+            {
+                double baseRegenSpeed = entity.Api.World.Config.GetString("playerHealthRegenSpeed", "1").ToFloat();
+                bh._playerHealthRegenSpeed = (float) (baseRegenSpeed * HealthRegenPenalty());
+            }
+
+            // Slower movement speed if starving
+            entity.Stats.Set("walkspeed", "starvationmod", -1 * MoveSpeedPenalty(), false);
+
+            // Weaker damage and slower mining
+            entity.Stats.Set("meleeWeaponsDamage", "starvationmod", damageMul, false);
+            entity.Stats.Set("rangedWeaponsDamage", "starvationmod", damageMul, false);
+            entity.Stats.Set("mechanicalsDamage", "starvationmod", damageMul, false);
+            entity.Stats.Set("bowDrawingStrength", "starvationmod", damageMul, false);
+            entity.Stats.Set("miningSpeedMul", "starvationmod", damageMul, false);
+
+            if (energyReserves < DEATH_THRESHOLD)
+            {
+                entity.Die(EnumDespawnReason.Death, 
+                           new DamageSource() { Source = EnumDamageSource.Internal, Type = EnumDamageType.Hunger });
+                return;
+            }
+
+            // "Intoxicated" effect if severe starvation
+            if (energyReserves < STARVE_THRESHOLD_EXTREME)
+            {
+                entity.WatchedAttributes.SetFloat("intoxication", Math.Max(entity.WatchedAttributes.GetFloat("intoxication"), 1));
             }
         }
 
@@ -80,15 +141,12 @@ namespace Starvation
         // Note: deltaTime is in SECONDS i.e. 0.25
         private void ServerTick250(float deltaTime)
         {
-            double temp = ModSystemStarvation.HeatIndexTemperature(ModSystemStarvation.GetTemperatureAtEntity(entity), 
-                                                                   ModSystemStarvation.GetHumidityAtEntity(entity));
-            double kJPerGameDay = ModSystemStarvation.CalculateBMR(bodyWeight, ageInYears, temp) * currentMETs;
+            double kJPerGameDay = ModSystemStarvation.CalculateBMR(bodyWeight, ageInYears, heatIndexTemp) * currentMETs;
             double kJPerGameSecond = kJPerGameDay / 24.0 / 60.0 / 60.0;
-
             double gameSeconds = DeltaTimeToGameSeconds(deltaTime);
 
             // Exit if we are in Creative or Spectator game modes
-            if (entity is EntityPlayer)
+            if (IsSelf)
             {
                 EntityPlayer plr = entity as EntityPlayer;
                 EnumGameMode mode = entity.World.PlayerByUid(plr.PlayerUID).WorldData.CurrentGameMode;
@@ -96,39 +154,9 @@ namespace Starvation
                 if (mode == EnumGameMode.Creative || mode == EnumGameMode.Spectator) return;
             }
 
-            // Set vanilla saturation to an OK value, to "deactivate" vanilla hunger system
-            EntityBehaviorHunger bhunger = entity.GetBehavior<EntityBehaviorHunger>();
-            // if (bhunger != null)
-            // {
-            //     bhunger.Saturation = bhunger.MaxSaturation * 0.75f;
-            // }
-            
-            // Decrease max health if starving
-            EntityBehaviorHealth bh = entity.GetBehavior<EntityBehaviorHealth>();
-            double healthPenalty = -1 * MaxHealthPenalty();
-            bh.MaxHealthModifiers["starvationMod"] = (float) healthPenalty;
-            // Remove vanilla stat boosts from food groups
-            bh.MaxHealthModifiers["nutrientHealthMod"] = 0;
-
-            // Slower health regeneration if starving
-            double baseRegenSpeed = entity.Api.World.Config.GetString("playerHealthRegenSpeed", "1").ToFloat();
-            bh._playerHealthRegenSpeed = (float) (baseRegenSpeed * HealthRegenPenalty());
-
-            // Slower movement speed if starving
-            entity.Stats.Set("walkspeed", "starvationmod", -1 * MoveSpeedPenalty(), false);
-
-            // "Intoxicated" effect if severe starvation
-            if (energyReserves < STARVE_THRESHOLD_EXTREME)
-            {
-                entity.WatchedAttributes.SetFloat("intoxication", Math.Max(entity.WatchedAttributes.GetFloat("intoxication"), 1));
-            }
-
             // We have expended kJPerSecond * gameSeconds (kJ)
             // Decrement our total energy stores by this amount
             energyReserves = energyReserves - (kJPerGameSecond * gameSeconds);
-
-            // Modify body weight to be in line with energy reserves
-            bodyWeight = ModSystemStarvation.EnergyReservesToBMI(energyReserves) * Math.Pow(entity.Properties.EyeHeight, 2);
 
             Console.WriteLine("ServerTick250: BMR = " + (kJPerGameDay/currentMETs) + ", energyReserves = " + energyReserves + 
                                 ", kJPerGameSecond = " + kJPerGameSecond + ", deltaTime = " + deltaTime + ", gameSeconds = " + 
@@ -150,7 +178,6 @@ namespace Starvation
             // Unfortunately "fat" is not a food category in VS, so we use "Dairy" instead.
 
             energyReserves += ModSystemStarvation.CaloriesToKilojoules(0.5 * saturation);
-            // TODO gain a "satiated" buff if the meal was of decent size (esp if protein or fat)
         }
 
 
@@ -161,72 +188,64 @@ namespace Starvation
             energyReserves = Math.Max(STARVE_THRESHOLD_EXTREME, energyReserves);
         }
 
+        // Return true if this entity is the player controlled by the client.
+        bool IsSelf => entity.WatchedAttributes.GetString("playerUID") == ModSystemStarvation.clientAPI.Settings.String["playeruid"];
 
         // Returns number which is subtracted from max health
-        public double MaxHealthPenalty()
+        public double MaxHealthPenalty() 
         {
-            if (energyReserves < STARVE_THRESHOLD_EXTREME)
+            return energyReserves switch
             {
-                return 12;
-            }
-            else if (energyReserves < STARVE_THRESHOLD_SEVERE)
-            {
-                return 6;
-            }
-            else if (energyReserves < STARVE_THRESHOLD_MODERATE)
-            {
-                return 4.5;
-            }
-            else if (energyReserves < STARVE_THRESHOLD_MODERATE)
-            {
-                return 2.5;
-            } else {
-                return 0;
-            }
-        }
+                > STARVE_THRESHOLD_MILD                                     => 0,           // not starving
+                <= STARVE_THRESHOLD_MILD and > STARVE_THRESHOLD_MODERATE    => 2,           // mild, a few days
+                <= STARVE_THRESHOLD_MODERATE and > STARVE_THRESHOLD_SEVERE  => 4,         // moderate
+                <= STARVE_THRESHOLD_SEVERE and > STARVE_THRESHOLD_EXTREME   => 7,         // severe
+                _                                                           => 12,         // extreme
+            };
+        } 
+
 
         // Returns number which health regen speed (default = 1) is multiplied by.
-        public double HealthRegenPenalty()
+        public double HealthRegenPenalty() 
         {
-            if (energyReserves < STARVE_THRESHOLD_EXTREME)
+            return energyReserves switch
             {
-                return 0;
-            }
-            else if (energyReserves < STARVE_THRESHOLD_SEVERE)
-            {
-                return 0;
-            }
-            else if (energyReserves < STARVE_THRESHOLD_MODERATE)
-            {
-                return 0.25;
-            }
-            else if (energyReserves < STARVE_THRESHOLD_MODERATE)
-            {
-                return 0.5;
-            } else {
-                return 1;
-            }
-        }
+                > STARVE_THRESHOLD_MILD                                     => 1,           // not starving
+                <= STARVE_THRESHOLD_MILD and > STARVE_THRESHOLD_MODERATE    => 1,           // mild, a few days
+                <= STARVE_THRESHOLD_MODERATE and > STARVE_THRESHOLD_SEVERE  => 0.5,         // moderate
+                <= STARVE_THRESHOLD_SEVERE and > STARVE_THRESHOLD_EXTREME   => 0,         // severe
+                _                                                           => 0,         // extreme
+            };
+        } 
 
 
-        // Returns number which is subtracted from movement speed.
-        public float MoveSpeedPenalty()
+        // Returns number which damage and mining speed (default = 1) is multiplied by.
+        public float DamageMultipler() 
         {
-            float debuff = 0;
+            return energyReserves switch
+            {
+                > STARVE_THRESHOLD_MILD                                     => 1,           // not starving
+                <= STARVE_THRESHOLD_MILD and > STARVE_THRESHOLD_MODERATE    => 1,           // mild, a few days
+                <= STARVE_THRESHOLD_MODERATE and > STARVE_THRESHOLD_SEVERE  => 0.7f,         // moderate
+                <= STARVE_THRESHOLD_SEVERE and > STARVE_THRESHOLD_EXTREME   => 0.5f,         // severe
+                _                                                           => 0.4f,         // extreme
+            };
+        } 
+
+
+        // Returns number which is subtracted from movement speed. 1 = normal movement speed.
+        public float MoveSpeedPenalty() 
+        {
             EntityBehaviorHunger bhunger = entity.GetBehavior<EntityBehaviorHunger>();
 
-            if (energyReserves < STARVE_THRESHOLD_EXTREME)
+            float debuff = energyReserves switch
             {
-                debuff = 0.6f;
-            }
-            else if (energyReserves < STARVE_THRESHOLD_SEVERE)
-            {
-                debuff = 0.4f;
-            }
-            else if (energyReserves < STARVE_THRESHOLD_MODERATE)
-            {
-                debuff = 0.2f;
-            }
+                > STARVE_THRESHOLD_MILD                                     => 0,           // not starving
+                <= STARVE_THRESHOLD_MILD and > STARVE_THRESHOLD_MODERATE    => 0,           // mild, a few days
+                <= STARVE_THRESHOLD_MODERATE and > STARVE_THRESHOLD_SEVERE  => 0.2f,         // moderate
+                <= STARVE_THRESHOLD_SEVERE and > STARVE_THRESHOLD_EXTREME   => 0.4f,         // severe
+                _                                                           => 0.6f,         // extreme
+            };
 
             if (bhunger.SaturationLossDelayDairy > 0 || bhunger.SaturationLossDelayFruit > 0 || bhunger.SaturationLossDelayGrain > 0 
                 || bhunger.SaturationLossDelayProtein > 0 || bhunger.SaturationLossDelayVegetable > 0)
@@ -235,7 +254,8 @@ namespace Starvation
                 debuff *= 0.5f;
             }
             return debuff;
-        }
+        } 
+
 
         // Returns number of game seconds represented by deltaTime (real world SECONDS)
         private double DeltaTimeToGameSeconds(double deltaTime)
@@ -248,8 +268,11 @@ namespace Starvation
         {
             base.OnEntityDespawn(despawn);
 
-            if (serverListenerId != 0) 
+            if (serverListenerId != 0) {
                 entity.World.UnregisterGameTickListener(serverListenerId);
+                entity.World.UnregisterGameTickListener(serverListenerSlowId);
+            }
+                
         }
 
 
