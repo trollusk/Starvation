@@ -11,6 +11,9 @@ using Vintagestory.GameContent;
 using System.Collections;
 using Vintagestory.ServerMods.NoObf;
 using Vintagestory.API.Config;
+using System.Security.Cryptography.X509Certificates;
+using System.Linq;
+using Vintagestory.API.Server;
 
 
 
@@ -35,26 +38,38 @@ namespace Starvation
 
         public double energyReserves 
         {
-            get => entity.WatchedAttributes.GetDouble("energyReserves", INITIAL_ENERGY_RESERVES);
-            set => entity.WatchedAttributes.SetDouble("energyReserves", value);
+            get { return entity.WatchedAttributes.GetDouble("energyReserves", INITIAL_ENERGY_RESERVES); }
+            set { 
+                entity.WatchedAttributes.SetDouble("energyReserves", value); 
+                entity.WatchedAttributes.MarkPathDirty("energyReserves");
+            }
         }
 
         public double bodyWeight 
         {
-            get => entity.WatchedAttributes.GetDouble("bodyWeight", ModSystemStarvation.HealthyWeight(entity));
-            set => entity.WatchedAttributes.SetDouble("bodyWeight", value);
+            get { return entity.WatchedAttributes.GetDouble("bodyWeight", ModSystemStarvation.HealthyWeight(entity)); }
+            set { 
+                entity.WatchedAttributes.SetDouble("bodyWeight", value); 
+                entity.WatchedAttributes.MarkPathDirty("bodyWeight");
+            }
         }
 
         public double ageInYears 
         {
-            get => entity.WatchedAttributes.GetDouble("ageInYears", DEFAULT_ENTITY_AGE);
-            set => entity.WatchedAttributes.SetDouble("ageInYears", value);
+            get { return entity.WatchedAttributes.GetDouble("ageInYears", DEFAULT_ENTITY_AGE); }
+            set { 
+                entity.WatchedAttributes.SetDouble("ageInYears", value); 
+                entity.WatchedAttributes.MarkPathDirty("ageInYears");
+            }
         }
 
         public double currentMETs 
         {
-            get => entity.WatchedAttributes.GetDouble("currentMETs", 1);
-            set => entity.WatchedAttributes.SetDouble("currentMETs", value);
+            get { return entity.WatchedAttributes.GetDouble("currentMETs", 1); }
+            set { 
+                entity.WatchedAttributes.SetDouble("currentMETs", value); 
+                entity.WatchedAttributes.MarkPathDirty("currentMETs");
+            }
         }
 
 
@@ -77,6 +92,18 @@ namespace Starvation
                 // testing
                 // energyReserves = -170000;
             }
+        }
+
+
+        public override void OnReceivedClientPacket(IServerPlayer player, int packetid, byte[] data, ref EnumHandling handled)
+        {
+            base.OnReceivedClientPacket(player, packetid, data, ref handled);
+            if (packetid == ModSystemStarvation.PACKETID_METS)
+            {
+                currentMETs = SerializerUtil.Deserialize<double>(data);
+                Console.WriteLine("Server received packet: mets=" + currentMETs);
+            }
+            handled = EnumHandling.Handled;
         }
 
 
@@ -133,7 +160,38 @@ namespace Starvation
             if (energyReserves < STARVE_THRESHOLD_EXTREME)
             {
                 entity.WatchedAttributes.SetFloat("intoxication", Math.Max(entity.WatchedAttributes.GetFloat("intoxication"), 1));
+                entity.WatchedAttributes.MarkPathDirty("intoxication");
             }
+
+            // List<string> keyList = new List<string>((entity as EntityPlayer).TpAnimManager.ActiveAnimationsByAnimCode.Keys);
+            // Console.WriteLine("Animations: <" + string.Join( ", ", keyList) + ">");
+            // if ((entity as EntityPlayer).AnimManager.Animator != null)
+            // {
+            //     foreach (var anim in (entity as EntityPlayer).AnimManager.Animator.RunningAnimations)
+            //     {
+            //         // RunningAnimations is an array of ALL the entity's animations
+            //         if (!anim.Active) continue;
+            //         Console.WriteLine("AN:" + anim.Animation.Code);
+            //     }
+            // }
+            // if ((entity as EntityPlayer).TpAnimManager.Animator != null)
+            // {
+            //     foreach (var anim in (entity as EntityPlayer).TpAnimManager.Animator.RunningAnimations)
+            //     {
+            //         // RunningAnimations is an array of ALL the entity's animations
+            //         if (!anim.Active) continue;
+            //         Console.WriteLine("TP:" + anim.Animation.Code);
+            //     }
+            // }
+            // if ((entity as EntityPlayer).OtherAnimManager.Animator != null)
+            // {
+            //     foreach (var anim in (entity as EntityPlayer).OtherAnimManager.Animator.RunningAnimations)
+            //     {
+            //         // RunningAnimations is an array of ALL the entity's animations
+            //         if (!anim.Active) continue;
+            //         Console.WriteLine("OT:" + anim.Animation.Code);
+            //     }
+            // }
         }
 
 
@@ -146,7 +204,7 @@ namespace Starvation
             double gameSeconds = DeltaTimeToGameSeconds(deltaTime);
 
             // Exit if we are in Creative or Spectator game modes
-            if (IsSelf)
+            if (entity is EntityPlayer && IsSelf)
             {
                 EntityPlayer plr = entity as EntityPlayer;
                 EnumGameMode mode = entity.World.PlayerByUid(plr.PlayerUID).WorldData.CurrentGameMode;
@@ -158,9 +216,9 @@ namespace Starvation
             // Decrement our total energy stores by this amount
             energyReserves = energyReserves - (kJPerGameSecond * gameSeconds);
 
-            Console.WriteLine("ServerTick250: BMR = " + (kJPerGameDay/currentMETs) + ", energyReserves = " + energyReserves + 
-                                ", kJPerGameSecond = " + kJPerGameSecond + ", deltaTime = " + deltaTime + ", gameSeconds = " + 
-                                gameSeconds + ", energy decrement = " + (kJPerGameSecond * gameSeconds));
+            // Console.WriteLine("ServerTick250: speedoftime=" + entity.World.Calendar.SpeedOfTime + ", speedmul=" + entity.World.Calendar.CalendarSpeedMul + ", currentMETs = " + currentMETs + ", BMR = " + (kJPerGameDay/currentMETs) + ", energyReserves = " + energyReserves + 
+            //                     ", kJPerGameSecond = " + kJPerGameSecond + ", deltaTime = " + deltaTime + ", gameSeconds = " + 
+            //                     gameSeconds + ", energy decrement = " + (kJPerGameSecond * gameSeconds));
         }
 
 
@@ -173,7 +231,7 @@ namespace Starvation
                                                        float saturationLossDelay = 10f, float nutritionGainMultiplier = 1f)
         {
             // vanilla game saturation/satiety is meant to "correlate" with calories/kilojoules
-            // It doesn't really, but a very rough approximation is 2 * saturation = kJ
+            // It doesn't really, but a very rough approximation is saturation = 2 * kJ
 
             // Unfortunately "fat" is not a food category in VS, so we use "Dairy" instead.
 
@@ -189,7 +247,7 @@ namespace Starvation
         }
 
         // Return true if this entity is the player controlled by the client.
-        bool IsSelf => entity.WatchedAttributes.GetString("playerUID") == ModSystemStarvation.clientAPI.Settings.String["playeruid"];
+        bool IsSelf => entity?.WatchedAttributes.GetString("playerUID") == ModSystemStarvation.clientAPI?.Settings.String["playeruid"];
 
         // Returns number which is subtracted from max health
         public double MaxHealthPenalty() 
@@ -255,6 +313,20 @@ namespace Starvation
             }
             return debuff;
         } 
+
+
+        public static string HungerText(double energy)
+        {
+            return energy switch
+            {
+                > 0                                                         => "Satiated",
+                > STARVE_THRESHOLD_MILD                                     => "Hungry",           // not starving
+                <= STARVE_THRESHOLD_MILD and > STARVE_THRESHOLD_MODERATE    => "Desperate For Food",           // mild, a few days
+                <= STARVE_THRESHOLD_MODERATE and > STARVE_THRESHOLD_SEVERE  => "Starving!",         // moderate
+                <= STARVE_THRESHOLD_SEVERE and > STARVE_THRESHOLD_EXTREME   => "Severe starvation!",         // severe
+                _                                                           => "EXTREME STARVATION!",         // extreme
+            };
+        }
 
 
         // Returns number of game seconds represented by deltaTime (real world SECONDS)

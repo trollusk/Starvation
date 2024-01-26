@@ -11,6 +11,9 @@ using Vintagestory.API.Config;
 using static Vintagestory.API.Client.GuiDialog;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.Server;
+using System.Data.Common;
+using Vintagestory.API.Util;
+using Vintagestory.ServerMods.WorldEdit;
 
 
 
@@ -20,12 +23,12 @@ namespace Starvation
     public class ModSystemStarvation  : ModSystem
     {
         public const double HEALTHY_BMI = 22;
+        public const int PACKETID_METS = 19877583;
 
         public static ICoreClientAPI clientAPI;
         public static ICoreServerAPI serverAPI;
 
         GuiDialog dialog;
-
 
        // Dictionary mapping animation names to METs
         // TODO add all "-fp" versions
@@ -139,9 +142,7 @@ namespace Starvation
         // If you want to add or adjust attributes or properties of other game objects, do so in this method.
         public override void AssetsFinalize(ICoreAPI api)
         {
-            // Deactivate vanilla hunger system
-
-            GlobalConstants.HungerSpeedModifier = 0;
+           GlobalConstants.HungerSpeedModifier = 0;
 
             if (api.Side == EnumAppSide.Server)
             {
@@ -169,8 +170,21 @@ namespace Starvation
         {
             clientAPI = capi;
             dialog = new StarvationTextMessage(clientAPI);
-            dialog.TryOpen();
+            // dialog.TryOpen();
+
+            clientAPI.Input.RegisterHotKey("starvationgui", "Toggle the Starvation debug messages.", GlKeys.U, HotkeyType.GUIOrOtherControls);
+            clientAPI.Input.SetHotKeyHandler("starvationgui", ToggleGui);
+
             clientAPI.Event.RegisterGameTickListener(ClientTick500, 500);
+        }
+
+
+        private bool ToggleGui(KeyCombination comb)
+        {
+            if (dialog.IsOpened()) dialog.TryClose();
+            else dialog.TryOpen();
+
+            return true;
         }
 
 
@@ -185,20 +199,21 @@ namespace Starvation
             double mets = CalculateCurrentMETs(clientPlayer);
 
             clientPlayer.WatchedAttributes.SetDouble("currentMETs", mets);
+            clientPlayer.WatchedAttributes.MarkPathDirty("currentMETs");
+
+            clientAPI.Network.SendEntityPacket(clientPlayer.EntityId, PACKETID_METS, SerializerUtil.Serialize(mets));
 
             // Only show the messages if we are in "entity debug mode"
             // Enter this mode with server command /entity debug 1
             // and client command .clientconfig showentitydebuginfo 1
-            if (clientAPI.World.EntityDebugMode)
+            // if (clientAPI.World.EntityDebugMode)
             {
                 dialog.TryOpen();
                 if (dialog.IsOpened())
                 {
                     updateStarvationMessage();
                 }
-                Console.WriteLine("Client tick 0.5s: METS = " + mets);
-            } else {
-                dialog.TryClose();
+                // Console.WriteLine("Client tick 0.5s: METS = " + mets);
             }
         }
 
@@ -206,16 +221,21 @@ namespace Starvation
         void updateStarvationMessage()
         {
             EntityPlayer clientPlayer = clientAPI.World.Player.Entity;
-
+            
             double METs = clientPlayer.WatchedAttributes.GetDouble("currentMETs", 1);
             double energy = clientPlayer.WatchedAttributes.GetDouble("energyReserves", 999);
             double age = clientPlayer.WatchedAttributes.GetDouble("ageInYears", 25);
             double weight = clientPlayer.WatchedAttributes.GetDouble("bodyWeight", HealthyWeight(clientPlayer));
+            double bmi = weight / Math.Pow(clientPlayer.Properties.EyeHeight, 2);
+
             double temp = GetTemperatureAtEntity(clientPlayer);
-            Console.WriteLine("calculating BMR based on age " + age + ", weight " + weight + ", temp " + temp);
-            dialog.Composers["starvemessage"].GetDynamicText("energy").SetNewTextAsync("energy: " + Math.Round(energy, 5).ToString());
+            // Console.WriteLine("calculating BMR based on age " + age + ", weight " + weight + ", temp " + temp);
+            dialog.Composers["starvemessage"].GetDynamicText("energy").SetNewTextAsync("energy: " + Math.Round(energy, 2));
             dialog.Composers["starvemessage"].GetDynamicText("mets").SetNewTextAsync("METs: " + METs);
-            dialog.Composers["starvemessage"].GetDynamicText("bmr").SetNewTextAsync("BMR: " + CalculateBMR(weight, age, temp));
+            // TODO store this value (BMR)
+            dialog.Composers["starvemessage"].GetDynamicText("bmr").SetNewTextAsync("BMR: " + Math.Round(CalculateBMR(weight, age, temp)));
+            dialog.Composers["starvemessage"].GetDynamicText("bmi").SetNewTextAsync("BMI: " + Math.Round(bmi, 1));
+            dialog.Composers["starvemessage"].GetDynamicText("hunger").SetNewTextAsync(EntityBehaviorStarve.HungerText(energy));
         }
 
 

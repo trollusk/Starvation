@@ -1,11 +1,11 @@
 {
     "type": "code",
     "modid": "starvation",
-    "name": "starvation",
+    "name": "Starvation",
     "authors": [
-        "Unknown"
+        "trollusk"
     ],
-    "description": "To be added",
+    "description": "Replaces the Vanilla hunger system with a far more realistic one. Tracks each player's energy balance. Foods give realistic amounts of energy. Energy is lost at a realistic rate, and faster with physical activity. It is possible to survive for over 60 game days before dying of starvation (just like real life), but you will accumulate more and more debuffs to maximum health, healing, movement speed, and weapon damage.",
     "version": "1.0.0",
     "dependencies": {
         "game": ""

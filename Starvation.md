@@ -56,4 +56,13 @@ by day 21, falls to 0.3 kg/day and remains stable after that
 
 BMI 12 or lower is generally unrecoverable
 
-new DamageSource() { Source = EnumDamageSource.Internal, Type = EnumDamageType.Hunger }
+
+## Thirst
+
+resource that ticks down, like energy
+used up faster with: strenuous exercise, hot weather
+
+salt water
+fresh water
+stagnant water
+

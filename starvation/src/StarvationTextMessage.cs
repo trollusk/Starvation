@@ -6,6 +6,9 @@ namespace Starvation
 {
     public class StarvationTextMessage : HudElement
     {
+        public override string ToggleKeyCombinationCode => "starvationgui";
+
+
         public StarvationTextMessage(ICoreClientAPI capi) : base(capi)
         {
             ComposeGUI();
@@ -25,18 +28,18 @@ namespace Starvation
             ElementBounds textBounds = ElementBounds.Fixed(0, 0, 200, 20);
             ElementBounds textBounds2 = ElementBounds.Fixed(0, 25, 200, 20);
             ElementBounds textBounds3 = ElementBounds.Fixed(0, 50, 200, 20);
-            dialogBounds.WithChildren(textBounds, textBounds2, textBounds3);
+            ElementBounds textBounds4 = ElementBounds.Fixed(0, 75, 200, 20);
+            ElementBounds textBounds5 = ElementBounds.Fixed(0, 100, 200, 20);
+            dialogBounds.WithChildren(textBounds, textBounds2, textBounds3, textBounds4, textBounds5);
 
-            //GuiElementStatbar
-            //ElementBounds textBoundsLine2 = ElementBounds.Fixed(0, 30, 300, 200);
             Composers["starvemessage"] = capi.Gui
                 .CreateCompo("starvemessage", dialogBounds.FlatCopy().FixedGrow(0, 20))
-                //.AddDynamicText("energy: 0", CairoFont.WhiteSmallText(), textBounds, "energy")
-                //.AddDynamicText("METs: 0", CairoFont.WhiteSmallText(), textBounds, "mets")
                 .BeginChildElements(dialogBounds)
                     .AddDynamicText("energy: 0", CairoFont.WhiteSmallText(), textBounds, "energy")
                     .AddDynamicText("METs: 0", CairoFont.WhiteSmallText(), textBounds2, "mets")
                     .AddDynamicText("BMR: 0", CairoFont.WhiteSmallText(), textBounds3, "bmr")
+                    .AddDynamicText("BMI: 0", CairoFont.WhiteSmallText(), textBounds4, "bmi")
+                    .AddDynamicText("Satiated", CairoFont.WhiteSmallText(), textBounds5, "hunger")
                 .EndChildElements()
                 .Compose();
         }

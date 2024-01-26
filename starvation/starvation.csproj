@@ -44,6 +44,7 @@
 
 <ItemGroup>
   <PackageReference Include="cairosharp" Version="3.24.24.95" />
+  <PackageReference Include="Google.ProtoBuf" Version="3.25.2" />
 </ItemGroup>
 
 </Project>
