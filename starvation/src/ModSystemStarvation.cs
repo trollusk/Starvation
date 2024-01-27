@@ -19,11 +19,32 @@ using Vintagestory.ServerMods.WorldEdit;
 
 namespace Starvation
 {
+    public enum HungerLevel
+    {
+        Satiated,
+        Mild,
+        Moderate,
+        Severe,
+        VerySevere,
+        Extreme
+    };
+
+
     // "Controller" class that handles initialising the mod itself
     public class ModSystemStarvation  : ModSystem
     {
         public const double HEALTHY_BMI = 22;
         public const int PACKETID_METS = 19877583;
+
+        Dictionary<HungerLevel, string> HungerLevelToText = new Dictionary<HungerLevel, string>
+        { 
+            { HungerLevel.Satiated, "Satiated" },
+            { HungerLevel.Mild, "Hungry" },
+            { HungerLevel.Moderate, "Very Hungry" },
+            { HungerLevel.Severe, "Desperate For Food!" },
+            { HungerLevel.VerySevere, "Starving!" },
+            { HungerLevel.Extreme, "EXTREME STARVATION!" },
+        };
 
         public static ICoreClientAPI clientAPI;
         public static ICoreServerAPI serverAPI;
@@ -203,17 +224,9 @@ namespace Starvation
 
             clientAPI.Network.SendEntityPacket(clientPlayer.EntityId, PACKETID_METS, SerializerUtil.Serialize(mets));
 
-            // Only show the messages if we are in "entity debug mode"
-            // Enter this mode with server command /entity debug 1
-            // and client command .clientconfig showentitydebuginfo 1
-            // if (clientAPI.World.EntityDebugMode)
+            if (dialog.IsOpened())
             {
-                dialog.TryOpen();
-                if (dialog.IsOpened())
-                {
-                    updateStarvationMessage();
-                }
-                // Console.WriteLine("Client tick 0.5s: METS = " + mets);
+                updateStarvationMessage();
             }
         }
 
@@ -227,6 +240,8 @@ namespace Starvation
             double age = clientPlayer.WatchedAttributes.GetDouble("ageInYears", 25);
             double weight = clientPlayer.WatchedAttributes.GetDouble("bodyWeight", HealthyWeight(clientPlayer));
             double bmi = weight / Math.Pow(clientPlayer.Properties.EyeHeight, 2);
+            HungerLevel hungerLevel = EntityBehaviorStarve.EnergyToHungerLevel(energy);
+            string hungerTxt = HungerLevelToText.Get(hungerLevel, "");
 
             double temp = GetTemperatureAtEntity(clientPlayer);
             // Console.WriteLine("calculating BMR based on age " + age + ", weight " + weight + ", temp " + temp);
@@ -235,7 +250,8 @@ namespace Starvation
             // TODO store this value (BMR)
             dialog.Composers["starvemessage"].GetDynamicText("bmr").SetNewTextAsync("BMR: " + Math.Round(CalculateBMR(weight, age, temp)));
             dialog.Composers["starvemessage"].GetDynamicText("bmi").SetNewTextAsync("BMI: " + Math.Round(bmi, 1));
-            dialog.Composers["starvemessage"].GetDynamicText("hunger").SetNewTextAsync(EntityBehaviorStarve.HungerText(energy));
+            dialog.Composers["starvemessage"].GetDynamicText("hunger").Font = StarvationTextMessage.HungerLevelToFont(hungerLevel);
+            dialog.Composers["starvemessage"].GetDynamicText("hunger").SetNewTextAsync(hungerTxt);
         }
 
 

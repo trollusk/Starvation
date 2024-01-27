@@ -22,7 +22,7 @@ namespace Starvation
     public class EntityBehaviorStarve : EntityBehavior
     {
         private const double DEFAULT_ENTITY_AGE = 25;
-        private const double INITIAL_ENERGY_RESERVES = 0;
+        private const double INITIAL_ENERGY_RESERVES = 4000;
         private const double STARVE_THRESHOLD_MILD = -7500;
         private const double STARVE_THRESHOLD_MODERATE = -45000;
         private const double STARVE_THRESHOLD_SEVERE = -165000;
@@ -85,10 +85,11 @@ namespace Starvation
             // Initialise this behaviour instance's internal variables
             base.Initialize(properties, attributes);
 
+            
             if (entity.World.Side == EnumAppSide.Server)
             {
-                serverListenerId = entity.World.RegisterGameTickListener(ServerTick250, 250);
-                serverListenerSlowId = entity.World.RegisterGameTickListener(ServerTickSlow, 5000);
+                serverListenerId = entity.World.RegisterGameTickListener(ServerTick250, 250, 2000);
+                serverListenerSlowId = entity.World.RegisterGameTickListener(ServerTickSlow, 5000, 2000);
                 // testing
                 // energyReserves = -170000;
             }
@@ -315,19 +316,18 @@ namespace Starvation
         } 
 
 
-        public static string HungerText(double energy)
+        public static HungerLevel EnergyToHungerLevel(double energy)
         {
             return energy switch
             {
-                > 0                                                         => "Satiated",
-                > STARVE_THRESHOLD_MILD                                     => "Hungry",           // not starving
-                <= STARVE_THRESHOLD_MILD and > STARVE_THRESHOLD_MODERATE    => "Desperate For Food",           // mild, a few days
-                <= STARVE_THRESHOLD_MODERATE and > STARVE_THRESHOLD_SEVERE  => "Starving!",         // moderate
-                <= STARVE_THRESHOLD_SEVERE and > STARVE_THRESHOLD_EXTREME   => "Severe starvation!",         // severe
-                _                                                           => "EXTREME STARVATION!",         // extreme
+                > 0                                                         => HungerLevel.Satiated,
+                > STARVE_THRESHOLD_MILD                                     => HungerLevel.Mild,           // not starving
+                <= STARVE_THRESHOLD_MILD and > STARVE_THRESHOLD_MODERATE    => HungerLevel.Moderate,           // mild, a few days
+                <= STARVE_THRESHOLD_MODERATE and > STARVE_THRESHOLD_SEVERE  => HungerLevel.Severe,         // moderate
+                <= STARVE_THRESHOLD_SEVERE and > STARVE_THRESHOLD_EXTREME   => HungerLevel.VerySevere,         // severe
+                _                                                           => HungerLevel.Extreme,         // extreme
             };
         }
-
 
         // Returns number of game seconds represented by deltaTime (real world SECONDS)
         private double DeltaTimeToGameSeconds(double deltaTime)
