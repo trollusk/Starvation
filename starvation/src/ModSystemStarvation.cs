@@ -245,7 +245,7 @@ namespace Starvation
 
             double temp = GetTemperatureAtEntity(clientPlayer);
             // Console.WriteLine("calculating BMR based on age " + age + ", weight " + weight + ", temp " + temp);
-            dialog.Composers["starvemessage"].GetDynamicText("energy").SetNewTextAsync("energy: " + Math.Round(energy, 2));
+            dialog.Composers["starvemessage"].GetDynamicText("energy").SetNewTextAsync("energy: " + Math.Round(energy) + " kJ");
             dialog.Composers["starvemessage"].GetDynamicText("mets").SetNewTextAsync("METs: " + METs);
             // TODO store this value (BMR)
             dialog.Composers["starvemessage"].GetDynamicText("bmr").SetNewTextAsync("BMR: " + Math.Round(CalculateBMR(weight, age, temp)));
