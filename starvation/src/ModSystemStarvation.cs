@@ -43,7 +43,7 @@ namespace Starvation
             { HungerLevel.Moderate, "Very Hungry" },
             { HungerLevel.Severe, "Desperate For Food!" },
             { HungerLevel.VerySevere, "Starving!" },
-            { HungerLevel.Extreme, "EXTREME STARVATION!" },
+            { HungerLevel.Extreme, "STARVING TO DEATH!" },
         };
 
         public static ICoreClientAPI clientAPI;

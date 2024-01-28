@@ -34,7 +34,7 @@ namespace Starvation
         public StarvationTextMessage(ICoreClientAPI capi) : base(capi)
         {
             DefaultFont = CairoFont.WhiteSmallText();
-            WarningFont = DefaultFont.Clone().WithColor(WARNING_MESSAGE_COLOUR).WithFontSize((float) GuiStyle.NormalFontSize);
+            WarningFont = DefaultFont.Clone().WithColor(WARNING_MESSAGE_COLOUR).WithFontSize((float) GuiStyle.SmallishFontSize);
             DangerFont = WarningFont.Clone().WithColor(DANGER_MESSAGE_COLOUR);
 
             ComposeGUI();
@@ -55,7 +55,7 @@ namespace Starvation
             ElementBounds textBounds2 = ElementBounds.Fixed(0, 25, 200, 20);
             ElementBounds textBounds3 = ElementBounds.Fixed(0, 50, 200, 20);
             ElementBounds textBounds4 = ElementBounds.Fixed(0, 75, 200, 20);
-            ElementBounds textBounds5 = ElementBounds.Fixed(0, 100, 200, 40);
+            ElementBounds textBounds5 = ElementBounds.Fixed(0, 100, 200, 50);
             dialogBounds.WithChildren(textBounds, textBounds2, textBounds3, textBounds4, textBounds5);
 
             Composers["starvemessage"] = capi.Gui
