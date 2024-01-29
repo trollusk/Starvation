@@ -14,6 +14,7 @@ using Vintagestory.Server;
 using System.Data.Common;
 using Vintagestory.API.Util;
 using Vintagestory.ServerMods.WorldEdit;
+using Vintagestory.Client.NoObf;
 
 
 
@@ -157,6 +158,11 @@ namespace Starvation
             // Called on server, before any content is actually loaded.
 
             api.RegisterEntityBehaviorClass("starve", typeof(EntityBehaviorStarve));
+
+            if (! ClientSettings.Inst.HasSetting("starveShowCalories"))
+            {
+                ClientSettings.Inst.Bool["starveShowCalories"] = false;
+            }
         }
 
 
@@ -244,8 +250,16 @@ namespace Starvation
             string hungerTxt = HungerLevelToText.Get(hungerLevel, "");
 
             double temp = GetTemperatureAtEntity(clientPlayer);
+            
+            bool showCalories = ClientSettings.Inst.GetBoolSetting("starveShowCalories");
+
             // Console.WriteLine("calculating BMR based on age " + age + ", weight " + weight + ", temp " + temp);
-            dialog.Composers["starvemessage"].GetDynamicText("energy").SetNewTextAsync("energy: " + Math.Round(energy) + " kJ");
+            if (showCalories)
+            {
+                dialog.Composers["starvemessage"].GetDynamicText("energy").SetNewTextAsync("energy: " + Math.Round(energy/4.189) + " cal");
+            } else {
+                dialog.Composers["starvemessage"].GetDynamicText("energy").SetNewTextAsync("energy: " + Math.Round(energy) + " kJ");
+            }
             dialog.Composers["starvemessage"].GetDynamicText("mets").SetNewTextAsync("METs: " + METs);
             // TODO store this value (BMR)
             dialog.Composers["starvemessage"].GetDynamicText("bmr").SetNewTextAsync("BMR: " + Math.Round(CalculateBMR(weight, age, temp)));

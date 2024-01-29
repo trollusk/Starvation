@@ -115,14 +115,10 @@ namespace Starvation
 
             heatIndexTemp = ModSystemStarvation.HeatIndexTemperature(ModSystemStarvation.GetTemperatureAtEntity(entity), 
                                                                      ModSystemStarvation.GetHumidityAtEntity(entity));
-            
+
             // Set vanilla saturation to an OK value, to "deactivate" vanilla hunger system
-            EntityBehaviorHunger bhunger = entity.GetBehavior<EntityBehaviorHunger>();
-            // if (bhunger != null)
-            // {
-            //     bhunger.Saturation = bhunger.MaxSaturation * 0.75f;
-            // }
-            
+            ResetHunger();
+
             // Modify body weight to be in line with energy reserves
             bodyWeight = ModSystemStarvation.EnergyReservesToBMI(energyReserves) * Math.Pow(entity.Properties.EyeHeight, 2);
 
@@ -164,35 +160,6 @@ namespace Starvation
                 entity.WatchedAttributes.MarkPathDirty("intoxication");
             }
 
-            // List<string> keyList = new List<string>((entity as EntityPlayer).TpAnimManager.ActiveAnimationsByAnimCode.Keys);
-            // Console.WriteLine("Animations: <" + string.Join( ", ", keyList) + ">");
-            // if ((entity as EntityPlayer).AnimManager.Animator != null)
-            // {
-            //     foreach (var anim in (entity as EntityPlayer).AnimManager.Animator.RunningAnimations)
-            //     {
-            //         // RunningAnimations is an array of ALL the entity's animations
-            //         if (!anim.Active) continue;
-            //         Console.WriteLine("AN:" + anim.Animation.Code);
-            //     }
-            // }
-            // if ((entity as EntityPlayer).TpAnimManager.Animator != null)
-            // {
-            //     foreach (var anim in (entity as EntityPlayer).TpAnimManager.Animator.RunningAnimations)
-            //     {
-            //         // RunningAnimations is an array of ALL the entity's animations
-            //         if (!anim.Active) continue;
-            //         Console.WriteLine("TP:" + anim.Animation.Code);
-            //     }
-            // }
-            // if ((entity as EntityPlayer).OtherAnimManager.Animator != null)
-            // {
-            //     foreach (var anim in (entity as EntityPlayer).OtherAnimManager.Animator.RunningAnimations)
-            //     {
-            //         // RunningAnimations is an array of ALL the entity's animations
-            //         if (!anim.Active) continue;
-            //         Console.WriteLine("OT:" + anim.Animation.Code);
-            //     }
-            // }
         }
 
 
@@ -235,8 +202,9 @@ namespace Starvation
             // It doesn't really, but a very rough approximation is saturation = 2 * kJ
 
             // Unfortunately "fat" is not a food category in VS, so we use "Dairy" instead.
-
+            // Console.WriteLine("Gained saturation: " + saturation + ", food category " + foodCat);
             energyReserves += ModSystemStarvation.CaloriesToKilojoules(0.5 * saturation);
+            ResetHunger();
         }
 
 
@@ -249,6 +217,19 @@ namespace Starvation
 
         // Return true if this entity is the player controlled by the client.
         bool IsSelf => entity?.WatchedAttributes.GetString("playerUID") == ModSystemStarvation.clientAPI?.Settings.String["playeruid"];
+
+
+        // Reset vanilla satiety to a constant value, effectively disabling vanilla hunger system.
+        // The value must be less than MaxSaturation, to allow meals to be consumed.
+        private void ResetHunger()
+        {
+            EntityBehaviorHunger bhunger = entity.GetBehavior<EntityBehaviorHunger>();
+            if (bhunger != null)
+            {
+                bhunger.Saturation = 100;  
+            }
+        }
+
 
         // Returns number which is subtracted from max health
         public double MaxHealthPenalty() 
