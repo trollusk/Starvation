@@ -15,6 +15,7 @@ using System.Data.Common;
 using Vintagestory.API.Util;
 using Vintagestory.ServerMods.WorldEdit;
 using Vintagestory.Client.NoObf;
+using System.Linq;
 
 
 
@@ -39,12 +40,12 @@ namespace Starvation
 
         Dictionary<HungerLevel, string> HungerLevelToText = new Dictionary<HungerLevel, string>
         { 
-            { HungerLevel.Satiated, Lang.Get("starvation:descr-satiated") },
-            { HungerLevel.Mild, Lang.Get("starvation:descr-starve-mild") },
-            { HungerLevel.Moderate, Lang.Get("starvation:descr-starve-moderate") },
-            { HungerLevel.Severe, Lang.Get("starvation:descr-starve-severe") },
-            { HungerLevel.VerySevere, Lang.Get("starvation:descr-starve-very-severe") },
-            { HungerLevel.Extreme, Lang.Get("starvation:descr-starve-extreme") },
+            // { HungerLevel.Satiated, Lang.Get("starvation:descr-satiated") },
+            // { HungerLevel.Mild, Lang.Get("starvation:descr-starve-mild") },
+            // { HungerLevel.Moderate, Lang.Get("starvation:descr-starve-moderate") },
+            // { HungerLevel.Severe, Lang.Get("starvation:descr-starve-severe") },
+            // { HungerLevel.VerySevere, Lang.Get("starvation:descr-starve-very-severe") },
+            // { HungerLevel.Extreme, Lang.Get("starvation:descr-starve-extreme") },
         };
 
         public static ICoreClientAPI clientAPI;
@@ -156,6 +157,7 @@ namespace Starvation
         public override void Start(ICoreAPI api)
         {
             // Called on server, before any content is actually loaded.
+            base.Start(api);
 
             api.RegisterEntityBehaviorClass("starve", typeof(EntityBehaviorStarve));
 
@@ -169,7 +171,16 @@ namespace Starvation
         // If you want to add or adjust attributes or properties of other game objects, do so in this method.
         public override void AssetsFinalize(ICoreAPI api)
         {
-           GlobalConstants.HungerSpeedModifier = 0;
+            base.AssetsFinalize(api);
+
+            HungerLevelToText[HungerLevel.Satiated] = Lang.Get("starvation:descr-satiated");
+            HungerLevelToText[HungerLevel.Mild] = Lang.Get("starvation:descr-starve-mild");
+            HungerLevelToText[HungerLevel.Moderate] = Lang.Get("starvation:descr-starve-moderate");
+            HungerLevelToText[HungerLevel.Severe] = Lang.Get("starvation:descr-starve-severe");
+            HungerLevelToText[HungerLevel.VerySevere] = Lang.Get("starvation:descr-starve-very-severe");
+            HungerLevelToText[HungerLevel.Extreme] = Lang.Get("starvation:descr-starve-extreme");
+
+            GlobalConstants.HungerSpeedModifier = 0;
 
             if (api.Side == EnumAppSide.Server)
             {
@@ -187,6 +198,7 @@ namespace Starvation
         public override void StartServerSide(ICoreServerAPI sapi)
         {
             // Called on server, before any content is actually loaded.
+            base.StartServerSide(sapi);
 
             serverAPI = sapi;
         }
@@ -195,11 +207,14 @@ namespace Starvation
         // Called from the client, when the game world is fully loaded and ready to start.
         public override void StartClientSide(ICoreClientAPI capi)
         {
+            base.StartClientSide(capi);
+
             clientAPI = capi;
             dialog = new StarvationTextMessage(clientAPI);
             // dialog.TryOpen();
 
-            clientAPI.Input.RegisterHotKey("starvationgui", Lang.Get("starvation:gui-toggle-keybind-descr"), GlKeys.U, HotkeyType.GUIOrOtherControls);
+            clientAPI.Input.RegisterHotKey("starvationgui", Lang.Get("starvation:gui-toggle-keybind-descr"), 
+                                            GlKeys.U, HotkeyType.GUIOrOtherControls);
             clientAPI.Input.SetHotKeyHandler("starvationgui", ToggleGui);
 
             clientAPI.Event.RegisterGameTickListener(ClientTick500, 500);
@@ -213,6 +228,17 @@ namespace Starvation
 
             return true;
         }
+
+
+        // public static string GetLocalized(string key, string engDefault)
+        // {
+        //     if (Lang.HasTranslation(key))
+        //     {
+        //         return Lang.Get(key);
+        //     } else {
+        //         return engDefault;
+        //     }
+        // }
 
 
         // Called within the CLIENT, every 500 milliseconds.
@@ -234,11 +260,6 @@ namespace Starvation
             {
                 updateStarvationMessage();
             }
-            Console.WriteLine("Locale = " + Lang.CurrentLocale);
-            Console.WriteLine("GetL(starvation:descr-satiated) = " + Lang.GetL("en", "starvation:descr-satiated") + " " + Lang.HasTranslation("starvation:descr-satiated"));
-            Console.WriteLine("GetL(descr-satiated) = " + Lang.GetL("en", "descr-satiated") + " " + Lang.HasTranslation("descr-satiated"));
-            Console.WriteLine("GetMatching(descr-satiated) = " + Lang.GetMatching("descr-satiated"));
-            Console.WriteLine("Asset path = " + GamePaths.AssetsPath);
         }
 
 
@@ -259,17 +280,10 @@ namespace Starvation
             bool showCalories = ClientSettings.Inst.GetBoolSetting("starveShowCalories");
             string energyUnit = showCalories ? Lang.Get("starvation:abbrev-calories") : Lang.Get("starvation:abbrev-kilojoules");
 
-            // Console.WriteLine("calculating BMR based on age " + age + ", weight " + weight + ", temp " + temp);
-            // if (showCalories)
-            // {
-            //     dialog.Composers["starvemessage"].GetDynamicText("energy").SetNewTextAsync(Lang.Get("starvation:energy") + ": " + Math.Round(energy/(showCalories? 4.189 : 1)) + " " + energyUnit);
-            // } else {
-            //     dialog.Composers["starvemessage"].GetDynamicText("energy").SetNewTextAsync(Lang.Get("starvation:energy") + ": " + Math.Round(energy) + " " + energyUnit);
-            // }
             dialog.Composers["starvemessage"].GetDynamicText("energy").SetNewTextAsync(Lang.Get("starvation:energy") + ": " + Math.Round(energy/(showCalories? 4.189 : 1)) + " " + energyUnit);
             dialog.Composers["starvemessage"].GetDynamicText("mets").SetNewTextAsync(Lang.Get("starvation:abbrev-metabolic-equivalents") + ": " + METs);
             // TODO store this value (BMR)
-            dialog.Composers["starvemessage"].GetDynamicText("bmr").SetNewTextAsync(Lang.Get("starvation:abbrev-basal-metabolic-rate") + ": " + Math.Round(CalculateBMR(weight, age, temp, showCalories)) + " " + energyUnit + "/" + Lang.Get("starvation:day"));
+            dialog.Composers["starvemessage"].GetDynamicText("bmr").SetNewTextAsync(Lang.Get("starvation:abbrev-basal-metabolic-rate") + ": " + Math.Round(CalculateBMR(weight, age, temp, showCalories)) + " " + energyUnit + "/" + Lang.Get("starvation:day", "day"));
             dialog.Composers["starvemessage"].GetDynamicText("bmi").SetNewTextAsync(Lang.Get("starvation:abbrev-body-mass-index") + ": " + Math.Round(bmi, 1));
             dialog.Composers["starvemessage"].GetDynamicText("hunger").Font = StarvationTextMessage.HungerLevelToFont(hungerLevel);
             dialog.Composers["starvemessage"].GetDynamicText("hunger").SetNewTextAsync(hungerTxt);
@@ -369,14 +383,11 @@ namespace Starvation
             // list of all active animations
             List<string> keyList = new List<string>(entity.AnimManager.ActiveAnimationsByAnimCode.Keys);
 
-            // Console.Write("Anims: ");
             foreach (string animName in keyList)
             {
-                // Console.Write(animName + ", ");
                 METsByActivity.TryGetValue(animName, out value);
                 maxMETs = Math.Max(maxMETs, value);
             }
-            // Console.WriteLine();
             return maxMETs;
         }
 

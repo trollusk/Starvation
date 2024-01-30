@@ -102,7 +102,6 @@ namespace Starvation
             if (packetid == ModSystemStarvation.PACKETID_METS)
             {
                 currentMETs = SerializerUtil.Deserialize<double>(data);
-                // Console.WriteLine("Server received packet: mets=" + currentMETs);
             }
             handled = EnumHandling.Handled;
         }
@@ -183,10 +182,6 @@ namespace Starvation
             // We have expended kJPerSecond * gameSeconds (kJ)
             // Decrement our total energy stores by this amount
             energyReserves = energyReserves - (kJPerGameSecond * gameSeconds);
-
-            // Console.WriteLine("ServerTick250: speedoftime=" + entity.World.Calendar.SpeedOfTime + ", speedmul=" + entity.World.Calendar.CalendarSpeedMul + ", currentMETs = " + currentMETs + ", BMR = " + (kJPerGameDay/currentMETs) + ", energyReserves = " + energyReserves + 
-            //                     ", kJPerGameSecond = " + kJPerGameSecond + ", deltaTime = " + deltaTime + ", gameSeconds = " + 
-            //                     gameSeconds + ", energy decrement = " + (kJPerGameSecond * gameSeconds));
         }
 
 
@@ -202,7 +197,6 @@ namespace Starvation
             // It doesn't really, but a very rough approximation is saturation = 2 * kJ
 
             // Unfortunately "fat" is not a food category in VS, so we use "Dairy" instead.
-            // Console.WriteLine("Gained saturation: " + saturation + ", food category " + foodCat);
             energyReserves += ModSystemStarvation.CaloriesToKilojoules(0.5 * saturation);
             ResetHunger();
         }

@@ -1,3 +1,17 @@
 {
-    "hello": "hello world!"
+    "modname": "Realistic Starvation",
+    "descr-satiated": "Satiated",
+    "descr-starve-mild": "Hungry",
+    "descr-starve-moderate": "Very Hungry",
+    "descr-starve-severe": "Desperate For Food!",
+    "descr-starve-very-severe": "Starving!",
+    "descr-starve-extreme": "STARVING TO DEATH!",
+    "gui-toggle-keybind-descr": "Toggle the display of nutrition-related statistics in the HUD.",
+    "energy": "Energy",
+    "abbrev-body-mass-index": "BMI",
+    "abbrev-basal-metabolic-rate": "BMR",
+    "abbrev-metabolic-equivalents": "METs",
+    "abbrev-kilojoules": "kJ",
+    "abbrev-calories": "cal",
+    "day": "day"
 }
