@@ -1,5 +1,6 @@
 using Vintagestory.API.Client;
 using System.Collections.Generic;
+using Vintagestory.API.Config;
 
 
 namespace Starvation
@@ -61,11 +62,11 @@ namespace Starvation
             Composers["starvemessage"] = capi.Gui
                 .CreateCompo("starvemessage", dialogBounds.FlatCopy().FixedGrow(0, 20))
                 .BeginChildElements(dialogBounds)
-                    .AddDynamicText("energy: 0", DefaultFont, textBounds, "energy")
-                    .AddDynamicText("METs: 0", DefaultFont, textBounds2, "mets")
-                    .AddDynamicText("BMR: 0", DefaultFont, textBounds3, "bmr")
-                    .AddDynamicText("BMI: 0", DefaultFont, textBounds4, "bmi")
-                    .AddDynamicText("Satiated", DefaultFont, textBounds5, "hunger")
+                    .AddDynamicText(Lang.Get("starvation:energy") + ": 0", DefaultFont, textBounds, "energy")
+                    .AddDynamicText(Lang.Get("starvation:abbrev-metabolic-equivalents") + ": 1", DefaultFont, textBounds2, "mets")
+                    .AddDynamicText(Lang.Get("starvation:abbrev-basal-metabolic-rate") + ": 0", DefaultFont, textBounds3, "bmr")
+                    .AddDynamicText(Lang.Get("starvation:abbrev-body-mass-index") + ": 0", DefaultFont, textBounds4, "bmi")
+                    .AddDynamicText(Lang.Get("starvation:descr-satiated"), DefaultFont, textBounds5, "hunger")
                 .EndChildElements()
                 .Compose();
         }

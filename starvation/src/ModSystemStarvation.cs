@@ -39,12 +39,12 @@ namespace Starvation
 
         Dictionary<HungerLevel, string> HungerLevelToText = new Dictionary<HungerLevel, string>
         { 
-            { HungerLevel.Satiated, "Satiated" },
-            { HungerLevel.Mild, "Hungry" },
-            { HungerLevel.Moderate, "Very Hungry" },
-            { HungerLevel.Severe, "Desperate For Food!" },
-            { HungerLevel.VerySevere, "Starving!" },
-            { HungerLevel.Extreme, "STARVING TO DEATH!" },
+            { HungerLevel.Satiated, Lang.Get("starvation:descr-satiated") },
+            { HungerLevel.Mild, Lang.Get("starvation:descr-starve-mild") },
+            { HungerLevel.Moderate, Lang.Get("starvation:descr-starve-moderate") },
+            { HungerLevel.Severe, Lang.Get("starvation:descr-starve-severe") },
+            { HungerLevel.VerySevere, Lang.Get("starvation:descr-starve-very-severe") },
+            { HungerLevel.Extreme, Lang.Get("starvation:descr-starve-extreme") },
         };
 
         public static ICoreClientAPI clientAPI;
@@ -199,7 +199,7 @@ namespace Starvation
             dialog = new StarvationTextMessage(clientAPI);
             // dialog.TryOpen();
 
-            clientAPI.Input.RegisterHotKey("starvationgui", "Toggle the Starvation debug messages.", GlKeys.U, HotkeyType.GUIOrOtherControls);
+            clientAPI.Input.RegisterHotKey("starvationgui", Lang.Get("starvation:gui-toggle-keybind-descr"), GlKeys.U, HotkeyType.GUIOrOtherControls);
             clientAPI.Input.SetHotKeyHandler("starvationgui", ToggleGui);
 
             clientAPI.Event.RegisterGameTickListener(ClientTick500, 500);
@@ -234,6 +234,11 @@ namespace Starvation
             {
                 updateStarvationMessage();
             }
+            Console.WriteLine("Locale = " + Lang.CurrentLocale);
+            Console.WriteLine("GetL(starvation:descr-satiated) = " + Lang.GetL("en", "starvation:descr-satiated") + " " + Lang.HasTranslation("starvation:descr-satiated"));
+            Console.WriteLine("GetL(descr-satiated) = " + Lang.GetL("en", "descr-satiated") + " " + Lang.HasTranslation("descr-satiated"));
+            Console.WriteLine("GetMatching(descr-satiated) = " + Lang.GetMatching("descr-satiated"));
+            Console.WriteLine("Asset path = " + GamePaths.AssetsPath);
         }
 
 
@@ -252,18 +257,20 @@ namespace Starvation
             double temp = GetTemperatureAtEntity(clientPlayer);
             
             bool showCalories = ClientSettings.Inst.GetBoolSetting("starveShowCalories");
+            string energyUnit = showCalories ? Lang.Get("starvation:abbrev-calories") : Lang.Get("starvation:abbrev-kilojoules");
 
             // Console.WriteLine("calculating BMR based on age " + age + ", weight " + weight + ", temp " + temp);
-            if (showCalories)
-            {
-                dialog.Composers["starvemessage"].GetDynamicText("energy").SetNewTextAsync("energy: " + Math.Round(energy/4.189) + " cal");
-            } else {
-                dialog.Composers["starvemessage"].GetDynamicText("energy").SetNewTextAsync("energy: " + Math.Round(energy) + " kJ");
-            }
-            dialog.Composers["starvemessage"].GetDynamicText("mets").SetNewTextAsync("METs: " + METs);
+            // if (showCalories)
+            // {
+            //     dialog.Composers["starvemessage"].GetDynamicText("energy").SetNewTextAsync(Lang.Get("starvation:energy") + ": " + Math.Round(energy/(showCalories? 4.189 : 1)) + " " + energyUnit);
+            // } else {
+            //     dialog.Composers["starvemessage"].GetDynamicText("energy").SetNewTextAsync(Lang.Get("starvation:energy") + ": " + Math.Round(energy) + " " + energyUnit);
+            // }
+            dialog.Composers["starvemessage"].GetDynamicText("energy").SetNewTextAsync(Lang.Get("starvation:energy") + ": " + Math.Round(energy/(showCalories? 4.189 : 1)) + " " + energyUnit);
+            dialog.Composers["starvemessage"].GetDynamicText("mets").SetNewTextAsync(Lang.Get("starvation:abbrev-metabolic-equivalents") + ": " + METs);
             // TODO store this value (BMR)
-            dialog.Composers["starvemessage"].GetDynamicText("bmr").SetNewTextAsync("BMR: " + Math.Round(CalculateBMR(weight, age, temp)));
-            dialog.Composers["starvemessage"].GetDynamicText("bmi").SetNewTextAsync("BMI: " + Math.Round(bmi, 1));
+            dialog.Composers["starvemessage"].GetDynamicText("bmr").SetNewTextAsync(Lang.Get("starvation:abbrev-basal-metabolic-rate") + ": " + Math.Round(CalculateBMR(weight, age, temp, showCalories)) + " " + energyUnit + "/" + Lang.Get("starvation:day"));
+            dialog.Composers["starvemessage"].GetDynamicText("bmi").SetNewTextAsync(Lang.Get("starvation:abbrev-body-mass-index") + ": " + Math.Round(bmi, 1));
             dialog.Composers["starvemessage"].GetDynamicText("hunger").Font = StarvationTextMessage.HungerLevelToFont(hungerLevel);
             dialog.Composers["starvemessage"].GetDynamicText("hunger").SetNewTextAsync(hungerTxt);
         }
@@ -327,7 +334,7 @@ namespace Starvation
         // Depends on age, body weight, sex (ignored), and heat index (basically = ambient temperature, but increased a bit in humid environments)
         // Accounts for increased BMR seen with adaptation to cold environment.
         // Does not account for shivering (occurs when core body temp unacceptably low)
-        static public double CalculateBMR(double weightkg, double age, double tempC)
+        static public double CalculateBMR(double weightkg, double age, double tempC, bool calories = false)
         {
             // BMR in kcal = (13.6 * MASS) - (4.8 * AGE) + (147 * (1 if male, 0 if female)) - (4.3 * TEMP) + 857
             // kcal * 4.189 = kJ
@@ -335,7 +342,7 @@ namespace Starvation
             // assuming mass 64 kg, age 25, temp 15, BMR = approx 6800 kJ
             // double temp = entity.World.BlockAccessor.GetClimateAt(entity.Pos.AsBlockPos, EnumGetClimateMode.ForSuppliedDate_TemperatureOnly, entity.World.Calendar.TotalDays).Temperature;
             // double humidity = 50;
-            return (13.6 * weightkg - (4.8 * age) + 73.5 - (4.3 * tempC) + 857) * 4.189;
+            return (13.6 * weightkg - (4.8 * age) + 73.5 - (4.3 * tempC) + 857) * (calories? 1 : 4.189);
         }
 
 

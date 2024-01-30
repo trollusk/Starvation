@@ -102,7 +102,7 @@ namespace Starvation
             if (packetid == ModSystemStarvation.PACKETID_METS)
             {
                 currentMETs = SerializerUtil.Deserialize<double>(data);
-                Console.WriteLine("Server received packet: mets=" + currentMETs);
+                // Console.WriteLine("Server received packet: mets=" + currentMETs);
             }
             handled = EnumHandling.Handled;
         }
@@ -332,7 +332,7 @@ namespace Starvation
         // Return the short string alias for this mod
         public override string PropertyName()
         {
-            return "starve";
+            return "starvation";
         }
     }
 
