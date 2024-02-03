@@ -180,7 +180,8 @@ namespace Starvation
             HungerLevelToText[HungerLevel.VerySevere] = Lang.Get("starvation:descr-starve-very-severe");
             HungerLevelToText[HungerLevel.Extreme] = Lang.Get("starvation:descr-starve-extreme");
 
-            GlobalConstants.HungerSpeedModifier = 0;
+            // should not be needed as we reset satiety regularly in EntityBehaviorStarve.ResetHunger
+            // GlobalConstants.HungerSpeedModifier = 0;
 
             if (api.Side == EnumAppSide.Server)
             {
