@@ -169,6 +169,7 @@ namespace Starvation
             double kJPerGameDay = ModSystemStarvation.CalculateBMR(bodyWeight, ageInYears, heatIndexTemp) * currentMETs;
             double kJPerGameSecond = kJPerGameDay / 24.0 / 60.0 / 60.0;
             double gameSeconds = DeltaTimeToGameSeconds(deltaTime);
+            float gameHungerSpeed = GlobalConstants.HungerSpeedModifier;        // default = 1
 
             // Exit if we are in Creative or Spectator game modes
             if (entity is EntityPlayer && IsSelf)
@@ -181,7 +182,7 @@ namespace Starvation
 
             // We have expended kJPerSecond * gameSeconds (kJ)
             // Decrement our total energy stores by this amount
-            energyReserves = energyReserves - (kJPerGameSecond * gameSeconds);
+            energyReserves = energyReserves - (kJPerGameSecond * gameSeconds * gameHungerSpeed);
         }
 
 
