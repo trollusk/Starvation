@@ -300,7 +300,12 @@ namespace Starvation
         // Number from 0-1
         static public double GetRainfallAtEntity(Entity entity)
         {
-            return entity.World.BlockAccessor.GetClimateAt(entity.Pos.AsBlockPos, EnumGetClimateMode.ForSuppliedDateValues, entity.World.Calendar.TotalDays).Rainfall;
+            if (entity.World != null)
+            {
+                return entity.World.BlockAccessor.GetClimateAt(entity.Pos.AsBlockPos, EnumGetClimateMode.ForSuppliedDateValues, entity.World.Calendar.TotalDays).Rainfall;
+            } else {
+                return 0;
+            }
         }
 
 
