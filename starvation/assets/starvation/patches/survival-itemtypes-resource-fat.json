@@ -9,7 +9,7 @@
   {
     "op": "replace",
     "path": "/nutritionProps/saturation",
-    "value": 1800,
+    "value": 900,
     "file": "game:itemtypes/resource/fat.json",
     "side": "Server"
   }
