@@ -132,7 +132,7 @@ namespace Starvation
             if (IsSelf)
             {
                 double baseRegenSpeed = entity.Api.World.Config.GetString("playerHealthRegenSpeed", "1").ToFloat();
-                bh._playerHealthRegenSpeed = (float) (baseRegenSpeed * HealthRegenPenalty());
+                entity.WatchedAttributes.SetFloat("regenSpeed", (float)(baseRegenSpeed * HealthRegenPenalty()));
             }
 
             // Slower movement speed if starving
