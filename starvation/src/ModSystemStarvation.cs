@@ -16,6 +16,8 @@ using Vintagestory.API.Util;
 using Vintagestory.ServerMods.WorldEdit;
 using Vintagestory.Client.NoObf;
 using System.Linq;
+using Vintagestory;
+using Google.Protobuf.WellKnownTypes;
 
 
 
@@ -150,7 +152,11 @@ namespace Starvation
             { "startfire", 3 },
             { "shieldBlock", 10 },
             { "chiselready", 1.5 },
-            { "chiselhit", 3 }
+            { "chiselhit", 3 },
+            { "combatoverhaul-spear-idle", 2.3 },
+            {"combatoverhaul-spear-ready", 2.3 },
+            {"combatoverhaul-falx-slash", 1.95 }
+
         };
 
 
@@ -387,10 +393,15 @@ namespace Starvation
             double maxMETs = 1;
             double value = 1;
             // list of all active animations
+
             List<string> keyList = new List<string>(entity.AnimManager.ActiveAnimationsByAnimCode.Keys);
 
-            foreach (string animName in keyList)
+            foreach (string aName in keyList)
             {
+                // Potential Optimisation:
+                // Making second Dict with -fp may make it a bit faster, but when it occurs every 500ms I don't think it's a big deal
+                var animName = aName.Replace("-fp", ""); 
+
                 METsByActivity.TryGetValue(animName, out value);
                 maxMETs = Math.Max(maxMETs, value);
             }
