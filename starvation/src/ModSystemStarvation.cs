@@ -31,6 +31,17 @@ namespace Starvation
         Extreme
     };
 
+    public enum EnergyReserveLevel
+    {
+        ZERO,
+        MINIMAL,
+        VERY_LOW,
+        LOW,
+        MEDIUM,
+        High,
+        VERY_HIGH
+    }
+
 
     // "Controller" class that handles initialising the mod itself
     public class ModSystemStarvation  : ModSystem
@@ -47,6 +58,10 @@ namespace Starvation
             // { HungerLevel.VerySevere, Lang.Get("starvation:descr-starve-very-severe") },
             // { HungerLevel.Extreme, Lang.Get("starvation:descr-starve-extreme") },
         };
+        Dictionary<EnergyReserveLevel, string> EnergyLevelToText = new Dictionary<EnergyReserveLevel, string>
+        {
+
+        };
 
         public static ICoreClientAPI clientAPI;
         public static ICoreServerAPI serverAPI;
@@ -57,17 +72,17 @@ namespace Starvation
         // TODO add all "-fp" versions
         Dictionary<string, double> METsByActivity = new Dictionary<string, double>
         {
-            { "walk", 4 },
-            { "idle", 1.3 },
-            { "helditemready", 1.5 },
-            { "sitflooridle.", 1.3 },
-            { "sitflooredge.", 1.3 },
-            { "sprint", 12 },
-            { "sprint-fp", 12 },
-            { "sneakwalk", 2.5 },
+            { "walk", 4 }, //could also be like 10 when it is interpreted as jogging
+            { "idle", 1.2 },
+            { "helditemready", 1.3 },
+            { "sitflooridle.", 1.0 },
+            { "sitflooredge.", 1.0 },
+            { "sprint", 20 }, // sprint could also be something like 24 if it REALLY is ment to be a life saving sprint
+            { "sprint-fp", 20 },
+            { "sneakwalk", 2.3 },
             { "sneakidle", 1.3 },
             { "glide", 3.5 },
-            { "swim", 5.3 },
+            { "swim", 6 },
             { "swimidle", 3.5 },
             { "jump", 8 },
             { "climbup", 8 },
@@ -77,7 +92,7 @@ namespace Starvation
             { "protecteyes", 1.5 },
             { "coldidleheld", 5 },
             { "holdunderarm", 1.5 },
-            { "holdinglanternlefthand", 1.5 },
+            { "holdinglanternlefthand", 1.2 }, //this is also already punished by base game mechanism
             { "holdbothhands", 1.5 },
             { "holdbothhandslarge", 2 },
             { "hurt", 1 },
@@ -118,7 +133,7 @@ namespace Starvation
             { "shears", 4 },
             { "placeblock", 3 },
             { "interactstatic", 1.3 },
-            { "twohandplaceblock", 4 },
+            { "twohandplaceblock", 3 },
             { "eat", 2 },
             { "wave", 1.5 },
             { "nod", 1.5 },
@@ -127,8 +142,8 @@ namespace Starvation
             { "cry", 1.5 },
             { "shrug", 1.5 },
             { "cheer", 1.5 },
-            { "laugh", 1 },
-            { "rage", 1.5 },
+            { "laugh", 3 },
+            { "rage", 3 },
             { "panning", 2.8 },
             { "pour", 1.5 },
             { "petlarge", 1.5 },
@@ -143,11 +158,11 @@ namespace Starvation
             { "stretch", 2.3 },
             { "cough", 2.3 },
             { "headscratch", 1.5 },
-            { "raiseshield-left", 2 },
-            { "raiseshield-right", 2 },
+            { "raiseshield-left", 3 },
+            { "raiseshield-right", 3 },
             { "knifecut", 5 },
             { "knifestab", 5 },
-            { "startfire", 3 },
+            { "startfire", 5 },
             { "shieldBlock", 10 },
             { "chiselready", 1.5 },
             { "chiselhit", 3 }
@@ -179,6 +194,14 @@ namespace Starvation
             HungerLevelToText[HungerLevel.Severe] = Lang.Get("starvation:descr-starve-severe");
             HungerLevelToText[HungerLevel.VerySevere] = Lang.Get("starvation:descr-starve-very-severe");
             HungerLevelToText[HungerLevel.Extreme] = Lang.Get("starvation:descr-starve-extreme");
+
+            EnergyLevelToText[EnergyReserveLevel.VERY_HIGH] = Lang.Get("starvation:descr-energylvl-very-high");
+            EnergyLevelToText[EnergyReserveLevel.High] = Lang.Get("starvation:descr-energylvl-high");
+            EnergyLevelToText[EnergyReserveLevel.MEDIUM] = Lang.Get("starvation:descr-energylvl-medium");
+            EnergyLevelToText[EnergyReserveLevel.LOW] = Lang.Get("starvation:descr-energylvl-low");
+            EnergyLevelToText[EnergyReserveLevel.VERY_LOW] = Lang.Get("starvation:descr-energylvl-very-low");
+            EnergyLevelToText[EnergyReserveLevel.MINIMAL] = Lang.Get("starvation:descr-energylvl-min");
+            EnergyLevelToText[EnergyReserveLevel.ZERO] = Lang.Get("starvation:descr-energylvl-zero");
 
             // should not be needed as we reset satiety regularly in EntityBehaviorStarve.ResetHunger
             // GlobalConstants.HungerSpeedModifier = 0;
@@ -272,9 +295,12 @@ namespace Starvation
             double energy = clientPlayer.WatchedAttributes.GetDouble("energyReserves", 999);
             double age = clientPlayer.WatchedAttributes.GetDouble("ageInYears", 25);
             double weight = clientPlayer.WatchedAttributes.GetDouble("bodyWeight", HealthyWeight(clientPlayer));
+            double gastroReserves = clientPlayer.WatchedAttributes.GetDouble("gastrointestinalReserves");
             double bmi = weight / Math.Pow(clientPlayer.Properties.EyeHeight, 2);
-            HungerLevel hungerLevel = EntityBehaviorStarve.EnergyToHungerLevel(energy);
+            HungerLevel hungerLevel = EntityBehaviorStarve.WeightToHungerLevel(weight);
             string hungerTxt = HungerLevelToText.Get(hungerLevel, "");
+            EnergyReserveLevel energyLevel = EntityBehaviorStarve.EnergyToReserveLevel(energy);
+            string energyLvlTxt = EnergyLevelToText.Get(energyLevel, "");
 
             double temp = GetTemperatureAtEntity(clientPlayer);
             
@@ -285,9 +311,12 @@ namespace Starvation
             dialog.Composers["starvemessage"].GetDynamicText("mets").SetNewTextAsync(Lang.Get("starvation:abbrev-metabolic-equivalents") + ": " + METs);
             // TODO store this value (BMR)
             dialog.Composers["starvemessage"].GetDynamicText("bmr").SetNewTextAsync(Lang.Get("starvation:abbrev-basal-metabolic-rate") + ": " + Math.Round(CalculateBMR(weight, age, temp, showCalories)) + " " + energyUnit + "/" + Lang.Get("starvation:day", "day"));
-            dialog.Composers["starvemessage"].GetDynamicText("bmi").SetNewTextAsync(Lang.Get("starvation:abbrev-body-mass-index") + ": " + Math.Round(bmi, 1));
+            dialog.Composers["starvemessage"].GetDynamicText("bmi").SetNewTextAsync(Lang.Get("starvation:abbrev-body-mass-index") + ": " + Math.Round(bmi, 2));
             dialog.Composers["starvemessage"].GetDynamicText("hunger").Font = StarvationTextMessage.HungerLevelToFont(hungerLevel);
             dialog.Composers["starvemessage"].GetDynamicText("hunger").SetNewTextAsync(hungerTxt);
+            dialog.Composers["starvemessage"].GetDynamicText("energylvl").Font = StarvationTextMessage.EnergyLevelToFont(energyLevel);
+            dialog.Composers["starvemessage"].GetDynamicText("energylvl").SetNewTextAsync(energyLvlTxt);
+            dialog.Composers["starvemessage"].GetDynamicText("gastrointestinal").SetNewTextAsync(Lang.Get("starvation:abbrev-gastro-intestinal-reserves") + ": " + (int)gastroReserves);
         }
 
 
@@ -300,11 +329,11 @@ namespace Starvation
         // Number from 0-1
         static public double GetRainfallAtEntity(Entity entity)
         {
-            if (entity.World != null)
+            if (entity.World != null) //maybe add ? for null checking entity. But the function above GetTemperatureAtEntity does no null checking and seems to work without it...
             {
                 return entity.World.BlockAccessor.GetClimateAt(entity.Pos.AsBlockPos, EnumGetClimateMode.ForSuppliedDateValues, entity.World.Calendar.TotalDays).Rainfall;
             } else {
-                return 0;
+                return 0; //TODO User report crash log says Object reference not set to an instance of an object
             }
         }
 
@@ -312,7 +341,7 @@ namespace Starvation
         static public double GetHumidityAtEntity(Entity entity)
         {
             // Humidity correlates to rainfall pretty closely
-            return Math.Clamp(GetRainfallAtEntity(entity) * 100, 10, 90);
+            return Math.Clamp(GetRainfallAtEntity(entity) * 100, 10, 90); //error propagation from 307
         }
 
 
@@ -362,7 +391,7 @@ namespace Starvation
             // assuming mass 64 kg, age 25, temp 15, BMR = approx 6800 kJ
             // double temp = entity.World.BlockAccessor.GetClimateAt(entity.Pos.AsBlockPos, EnumGetClimateMode.ForSuppliedDate_TemperatureOnly, entity.World.Calendar.TotalDays).Temperature;
             // double humidity = 50;
-            return (13.6 * weightkg - (4.8 * age) + 73.5 - (4.3 * tempC) + 857) * (calories? 1 : 4.189);
+            return (13.6 * weightkg - (4.8 * age) - (4.3 * tempC) + 930.5) * (calories? 1 : 4.189); // unoptimized but better readable: (13.6 * weightkg - (4.8 * age) + 73.5 - (4.3 * tempC) + 857) * (calories? 1 : 4.189);
         }
 
 
@@ -387,13 +416,21 @@ namespace Starvation
             double maxMETs = 1;
             double value = 1;
             // list of all active animations
-            List<string> keyList = new List<string>(entity.AnimManager.ActiveAnimationsByAnimCode.Keys);
+            List<string> keyList = new List<string>(entity.AnimManager.ActiveAnimationsByAnimCode.Keys); //Third Person Animations
+            List<string> keyListOther = new List<string>(entity.OtherAnimManager.ActiveAnimationsByAnimCode.Keys); //First Person Animations
+            keyList.AddRange(keyListOther); //probably just combines an empty list with the list we are interested in (which holds the animations)
 
             foreach (string animName in keyList)
             {
-                METsByActivity.TryGetValue(animName, out value);
-                maxMETs = Math.Max(maxMETs, value);
+                if(METsByActivity.TryGetValue(animName, out value))
+                {
+                    maxMETs = Math.Max(maxMETs, value);
+                }
             }
+            //respect hungerrate from trait ravenous for example or through armor wearing
+            double hungerRate = entity.Stats.GetBlended("hungerrate");
+            maxMETs = Math.Round(maxMETs * hungerRate, 2);
+
             return maxMETs;
         }
 
