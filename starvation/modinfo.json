@@ -6,7 +6,7 @@
         "trollusk"
     ],
     "description": "Realistic replacement for the Vanilla hunger system, based on human physiology.",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "dependencies": {
         "game": "1.20.3"
     }
