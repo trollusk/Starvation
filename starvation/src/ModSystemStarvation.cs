@@ -12,13 +12,6 @@ using Vintagestory.API.Config;
 using Vintagestory.API.Server;
 using Vintagestory.API.Util;
 using Vintagestory.Client.NoObf;
-<<<<<<< HEAD
-=======
-using System.Linq;
-using Vintagestory;
-using Google.Protobuf.WellKnownTypes;
-
->>>>>>> 2a01b3df04bee3bc91406eef2f73b7bab85cb827
 
 //using Vintagestory.GameContent;
 //using Vintagestory.Server;
@@ -37,8 +30,6 @@ namespace Starvation
         Extreme
     };
 
-<<<<<<< HEAD
-=======
     public enum EnergyReserveLevel
     {
         ZERO,
@@ -50,28 +41,17 @@ namespace Starvation
         VERY_HIGH
     }
 
-
->>>>>>> 2a01b3df04bee3bc91406eef2f73b7bab85cb827
     // "Controller" class that handles initialising the mod itself
     public class ModSystemStarvation : ModSystem
     {
         public const double HEALTHY_BMI = 22;
         public const int PACKETID_METS = 19877583;
 
-<<<<<<< HEAD
-        public readonly Dictionary<HungerLevel, string> HungerLevelToText =
-            new()
-            {
-                // { HungerLevel.Satiated, Lang.Get("starvation:descr-satiated") },
-                // { HungerLevel.Mild, Lang.Get("starvation:descr-starve-mild") },
-                // { HungerLevel.Moderate, Lang.Get("starvation:descr-starve-moderate") },
-                // { HungerLevel.Severe, Lang.Get("starvation:descr-starve-severe") },
-                // { HungerLevel.VerySevere, Lang.Get("starvation:descr-starve-very-severe") },
-                // { HungerLevel.Extreme, Lang.Get("starvation:descr-starve-extreme") },
-            };
-=======
-        Dictionary<HungerLevel, string> HungerLevelToText = new Dictionary<HungerLevel, string>
-        { 
+        public Dictionary<HungerLevel, string> HungerLevelToText = new Dictionary<
+            HungerLevel,
+            string
+        >
+        {
             // { HungerLevel.Satiated, Lang.Get("starvation:descr-satiated") },
             // { HungerLevel.Mild, Lang.Get("starvation:descr-starve-mild") },
             // { HungerLevel.Moderate, Lang.Get("starvation:descr-starve-moderate") },
@@ -79,11 +59,12 @@ namespace Starvation
             // { HungerLevel.VerySevere, Lang.Get("starvation:descr-starve-very-severe") },
             // { HungerLevel.Extreme, Lang.Get("starvation:descr-starve-extreme") },
         };
-        Dictionary<EnergyReserveLevel, string> EnergyLevelToText = new Dictionary<EnergyReserveLevel, string>
+        public Dictionary<EnergyReserveLevel, string> EnergyLevelToText = new Dictionary<
+            EnergyReserveLevel,
+            string
+        >
         {
-
         };
->>>>>>> 2a01b3df04bee3bc91406eef2f73b7bab85cb827
 
         public static ICoreClientAPI clientAPI { get; private set; }
         private static ICoreServerAPI _serverAPI;
@@ -92,110 +73,7 @@ namespace Starvation
 
         // Dictionary mapping animation names to METs
         // TODO add all "-fp" versions
-<<<<<<< HEAD
-        public readonly Dictionary<string, double> METsByActivity =
-            new()
-            {
-                { "walk", 4 },
-                { "idle", 1.3 },
-                { "helditemready", 1.5 },
-                { "sitflooridle.", 1.3 },
-                { "sitflooredge.", 1.3 },
-                { "sprint", 12 },
-                { "sprint-fp", 12 },
-                { "sneakwalk", 2.5 },
-                { "sneakidle", 1.3 },
-                { "glide", 3.5 },
-                { "swim", 5.3 },
-                { "swimidle", 3.5 },
-                { "jump", 8 },
-                { "climbup", 8 },
-                { "climbidle", 5 },
-                { "sleep", 0.95 },
-                { "coldidle", 4 },
-                { "protecteyes", 1.5 },
-                { "coldidleheld", 5 },
-                { "holdunderarm", 1.5 },
-                { "holdinglanternlefthand", 1.5 },
-                { "holdbothhands", 1.5 },
-                { "holdbothhandslarge", 2 },
-                { "hurt", 1 },
-                { "bowaim", 2.5 },
-                { "bowaimcrude", 2.5 },
-                { "bowaimlong", 2.5 },
-                { "bowaimrecurve", 2.5 },
-                { "bowhit", 1 },
-                { "throwaim", 2 },
-                { "throw", 4 },
-                { "slingaimgreek", 2 },
-                { "slingthrowgreek", 2 },
-                { "slingaimbalearic", 2 },
-                { "slingthrowbalearic", 2 },
-                { "hit", 2 },
-                { "smithing", 4 },
-                { "smithingwide", 4 },
-                { "knap", 3 },
-                { "breaktool", 1.3 },
-                { "breakhand", 1.3 },
-                { "falx", 5 },
-                { "swordhit", 2 },
-                { "axechop", 5 },
-                { "axeheld", 1.3 },
-                { "axeready", 1.3 },
-                { "hoe", 3.5 },
-                { "water", 1.5 },
-                { "shoveldig", 5 },
-                { "shovelready", 1.3 },
-                { "shovelidle", 1.3 },
-                { "spearhit", 1.5 },
-                { "spearready", 2.3 },
-                { "spearidle", 2.3 },
-                { "scythe", 2 },
-                { "scytheIdle", 1.3 },
-                { "scytheReady", 1.3 },
-                { "hammerandchisel", 3 },
-                { "shears", 4 },
-                { "placeblock", 3 },
-                { "interactstatic", 1.3 },
-                { "twohandplaceblock", 4 },
-                { "eat", 2 },
-                { "wave", 1.5 },
-                { "nod", 1.5 },
-                { "bow", 1.5 },
-                { "facepalm", 1.5 },
-                { "cry", 1.5 },
-                { "shrug", 1.5 },
-                { "cheer", 1.5 },
-                { "laugh", 1 },
-                { "rage", 1.5 },
-                { "panning", 2.8 },
-                { "pour", 1.5 },
-                { "petlarge", 1.5 },
-                { "petsmall", 1.5 },
-                { "crudeOarIdle", 2.3 },
-                { "crudeOarStandingReady", 2.3 },
-                { "crudeOarHit", 2 },
-                { "crudeOarForward", 5.8 },
-                { "crudeOarBackward", 5.8 },
-                { "crudeOarReady", 2.3 },
-                { "yawn", 2.3 },
-                { "stretch", 2.3 },
-                { "cough", 2.3 },
-                { "headscratch", 1.5 },
-                { "raiseshield-left", 2 },
-                { "raiseshield-right", 2 },
-                { "knifecut", 5 },
-                { "knifestab", 5 },
-                { "startfire", 3 },
-                { "shieldBlock", 10 },
-                { "chiselready", 1.5 },
-                { "chiselhit", 3 },
-                { "combatoverhaul-spear-idle", 2.3 },
-                { "combatoverhaul-spear-ready", 2.3 },
-                { "combatoverhaul-falx-slash", 1.95 }
-            };
-=======
-        Dictionary<string, double> METsByActivity = new Dictionary<string, double>
+        public Dictionary<string, double> METsByActivity = new Dictionary<string, double>
         {
             { "walk", 4 }, //could also be like 10 when it is interpreted as jogging
             { "idle", 1.2 },
@@ -292,12 +170,9 @@ namespace Starvation
             { "chiselready", 1.5 },
             { "chiselhit", 3 },
             { "combatoverhaul-spear-idle", 2.3 },
-            {"combatoverhaul-spear-ready", 2.3 },
-            {"combatoverhaul-falx-slash", 1.95 }
-
+            { "combatoverhaul-spear-ready", 2.3 },
+            { "combatoverhaul-falx-slash", 1.95 }
         };
-
->>>>>>> 2a01b3df04bee3bc91406eef2f73b7bab85cb827
 
         public override void Start(ICoreAPI api)
         {
@@ -321,13 +196,25 @@ namespace Starvation
             );
             HungerLevelToText[HungerLevel.Extreme] = Lang.Get("starvation:descr-starve-extreme");
 
-            EnergyLevelToText[EnergyReserveLevel.VERY_HIGH] = Lang.Get("starvation:descr-energylvl-very-high");
-            EnergyLevelToText[EnergyReserveLevel.High] = Lang.Get("starvation:descr-energylvl-high");
-            EnergyLevelToText[EnergyReserveLevel.MEDIUM] = Lang.Get("starvation:descr-energylvl-medium");
+            EnergyLevelToText[EnergyReserveLevel.VERY_HIGH] = Lang.Get(
+                "starvation:descr-energylvl-very-high"
+            );
+            EnergyLevelToText[EnergyReserveLevel.High] = Lang.Get(
+                "starvation:descr-energylvl-high"
+            );
+            EnergyLevelToText[EnergyReserveLevel.MEDIUM] = Lang.Get(
+                "starvation:descr-energylvl-medium"
+            );
             EnergyLevelToText[EnergyReserveLevel.LOW] = Lang.Get("starvation:descr-energylvl-low");
-            EnergyLevelToText[EnergyReserveLevel.VERY_LOW] = Lang.Get("starvation:descr-energylvl-very-low");
-            EnergyLevelToText[EnergyReserveLevel.MINIMAL] = Lang.Get("starvation:descr-energylvl-min");
-            EnergyLevelToText[EnergyReserveLevel.ZERO] = Lang.Get("starvation:descr-energylvl-zero");
+            EnergyLevelToText[EnergyReserveLevel.VERY_LOW] = Lang.Get(
+                "starvation:descr-energylvl-very-low"
+            );
+            EnergyLevelToText[EnergyReserveLevel.MINIMAL] = Lang.Get(
+                "starvation:descr-energylvl-min"
+            );
+            EnergyLevelToText[EnergyReserveLevel.ZERO] = Lang.Get(
+                "starvation:descr-energylvl-zero"
+            );
 
             // should not be needed as we reset satiety regularly in EntityBehaviorStarve.ResetHunger
             // GlobalConstants.HungerSpeedModifier = 0;
@@ -374,7 +261,7 @@ namespace Starvation
             );
             clientAPI.Input.SetHotKeyHandler("starvationgui", _ToggleGui);
 
-            clientAPI.Event.RegisterGameTickListener(_ClientTick500, 500);
+            _ = clientAPI.Event.RegisterGameTickListener(_ClientTick500, 500);
         }
 
         private bool _ToggleGui(KeyCombination _)
@@ -430,15 +317,13 @@ namespace Starvation
             double METs = clientPlayer.WatchedAttributes.GetDouble("currentMETs", 1);
             double energy = clientPlayer.WatchedAttributes.GetDouble("energyReserves", 999);
             double age = clientPlayer.WatchedAttributes.GetDouble("ageInYears", 25);
-<<<<<<< HEAD
             double weight = clientPlayer.WatchedAttributes.GetDouble(
                 "bodyWeight",
                 HealthyWeight(clientPlayer)
             );
-=======
-            double weight = clientPlayer.WatchedAttributes.GetDouble("bodyWeight", HealthyWeight(clientPlayer));
-            double gastroReserves = clientPlayer.WatchedAttributes.GetDouble("gastrointestinalReserves");
->>>>>>> 2a01b3df04bee3bc91406eef2f73b7bab85cb827
+            double gastroReserves = clientPlayer.WatchedAttributes.GetDouble(
+                "gastrointestinalReserves"
+            );
             double bmi = weight / Math.Pow(clientPlayer.Properties.EyeHeight, 2);
             HungerLevel hungerLevel = EntityBehaviorStarve.WeightToHungerLevel(weight);
             string hungerTxt = HungerLevelToText.Get(hungerLevel, "");
@@ -467,7 +352,6 @@ namespace Starvation
                 .GetDynamicText("mets")
                 .SetNewTextAsync(Lang.Get("starvation:abbrev-metabolic-equivalents") + ": " + METs);
             // TODO store this value (BMR)
-<<<<<<< HEAD
             dialog
                 .Composers["starvemessage"]
                 .GetDynamicText("bmr")
@@ -484,19 +368,25 @@ namespace Starvation
                 .Composers["starvemessage"]
                 .GetDynamicText("bmi")
                 .SetNewTextAsync(
-                    Lang.Get("starvation:abbrev-body-mass-index") + ": " + Math.Round(bmi, 1)
+                    Lang.Get("starvation:abbrev-body-mass-index") + ": " + Math.Round(bmi, 2)
                 );
             dialog.Composers["starvemessage"].GetDynamicText("hunger").Font =
                 StarvationTextMessage.HungerLevelToFont(hungerLevel);
-=======
-            dialog.Composers["starvemessage"].GetDynamicText("bmr").SetNewTextAsync(Lang.Get("starvation:abbrev-basal-metabolic-rate") + ": " + Math.Round(CalculateBMR(weight, age, temp, showCalories)) + " " + energyUnit + "/" + Lang.Get("starvation:day", "day"));
-            dialog.Composers["starvemessage"].GetDynamicText("bmi").SetNewTextAsync(Lang.Get("starvation:abbrev-body-mass-index") + ": " + Math.Round(bmi, 2));
-            dialog.Composers["starvemessage"].GetDynamicText("hunger").Font = StarvationTextMessage.HungerLevelToFont(hungerLevel);
->>>>>>> 2a01b3df04bee3bc91406eef2f73b7bab85cb827
             dialog.Composers["starvemessage"].GetDynamicText("hunger").SetNewTextAsync(hungerTxt);
-            dialog.Composers["starvemessage"].GetDynamicText("energylvl").Font = StarvationTextMessage.EnergyLevelToFont(energyLevel);
-            dialog.Composers["starvemessage"].GetDynamicText("energylvl").SetNewTextAsync(energyLvlTxt);
-            dialog.Composers["starvemessage"].GetDynamicText("gastrointestinal").SetNewTextAsync(Lang.Get("starvation:abbrev-gastro-intestinal-reserves") + ": " + (int)gastroReserves);
+            dialog.Composers["starvemessage"].GetDynamicText("energylvl").Font =
+                StarvationTextMessage.EnergyLevelToFont(energyLevel);
+            dialog
+                .Composers["starvemessage"]
+                .GetDynamicText("energylvl")
+                .SetNewTextAsync(energyLvlTxt);
+            dialog
+                .Composers["starvemessage"]
+                .GetDynamicText("gastrointestinal")
+                .SetNewTextAsync(
+                    Lang.Get("starvation:abbrev-gastro-intestinal-reserves")
+                        + ": "
+                        + (int) gastroReserves
+                );
         }
 
         public static double GetTemperatureAtEntity(Entity entity)
@@ -515,7 +405,6 @@ namespace Starvation
         {
             if (entity.World != null) //maybe add ? for null checking entity. But the function above GetTemperatureAtEntity does no null checking and seems to work without it...
             {
-<<<<<<< HEAD
                 return entity
                     .World.BlockAccessor.GetClimateAt(
                         entity.Pos.AsBlockPos,
@@ -526,12 +415,7 @@ namespace Starvation
             }
             else
             {
-                return 0;
-=======
-                return entity.World.BlockAccessor.GetClimateAt(entity.Pos.AsBlockPos, EnumGetClimateMode.ForSuppliedDateValues, entity.World.Calendar.TotalDays).Rainfall;
-            } else {
                 return 0; //TODO User report crash log says Object reference not set to an instance of an object
->>>>>>> 2a01b3df04bee3bc91406eef2f73b7bab85cb827
             }
         }
 
@@ -594,12 +478,7 @@ namespace Starvation
             // assuming mass 64 kg, age 25, temp 15, BMR = approx 6800 kJ
             // double temp = entity.World.BlockAccessor.GetClimateAt(entity.Pos.AsBlockPos, EnumGetClimateMode.ForSuppliedDate_TemperatureOnly, entity.World.Calendar.TotalDays).Temperature;
             // double humidity = 50;
-<<<<<<< HEAD
-            return ((13.6 * weightkg) - (4.8 * age) + 73.5 - (4.3 * tempC) + 857)
-                * (calories ? 1 : 4.189);
-=======
-            return (13.6 * weightkg - (4.8 * age) - (4.3 * tempC) + 930.5) * (calories? 1 : 4.189); // unoptimized but better readable: (13.6 * weightkg - (4.8 * age) + 73.5 - (4.3 * tempC) + 857) * (calories? 1 : 4.189);
->>>>>>> 2a01b3df04bee3bc91406eef2f73b7bab85cb827
+            return (13.6 * weightkg - (4.8 * age) - (4.3 * tempC) + 930.5) * (calories ? 1 : 4.189); // unoptimized but better readable: (13.6 * weightkg - (4.8 * age) + 73.5 - (4.3 * tempC) + 857) * (calories? 1 : 4.189);
         }
 
         public static double CaloriesToKilojoules(double cal)
@@ -621,26 +500,19 @@ namespace Starvation
             double maxMETs = 1;
             //double value;
             // list of all active animations
-<<<<<<< HEAD
-            List<string> keyList = new(entity.AnimManager.ActiveAnimationsByAnimCode.Keys);
-=======
 
 
-            List<string> keyList = new List<string>(entity.AnimManager.ActiveAnimationsByAnimCode.Keys);
->>>>>>> 2a01b3df04bee3bc91406eef2f73b7bab85cb827
-
+            List<string> keyList = new List<string>(
+                entity.AnimManager.ActiveAnimationsByAnimCode.Keys
+            );
 
             foreach (string aName in keyList)
             {
-<<<<<<< HEAD
-                _ = METsByActivity.TryGetValue(animName, out double value);
-=======
                 // Potential Optimisation:
                 // Making second Dict with -fp may make it a bit faster, but when it occurs every 500ms I don't think it's a big deal
-                var animName = aName.Replace("-fp", ""); 
+                string animName = aName.Replace("-fp", "");
 
-                METsByActivity.TryGetValue(animName, out value);
->>>>>>> 2a01b3df04bee3bc91406eef2f73b7bab85cb827
+                _ = METsByActivity.TryGetValue(animName, out double value);
                 maxMETs = Math.Max(maxMETs, value);
             }
             //respect hungerrate from trait ravenous for example or through armor wearing
